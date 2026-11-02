@@ -19,6 +19,7 @@ each type of information. The principles are in [RULES.md](RULES.md).
 | `preview.html` | Every system side by side on a mock Logseq page |
 | `still.html` | The Still system on a full-app mock, with a Baseline toggle |
 | `proposals.html` | The ten cognitive proposals behind the live behaviours, each with a demo |
+| `scripts/release.sh` | Builds the release zip Logseq installs from GitHub, by hand |
 | `tests/` | Consistency rules for the library, and the plugin's API wiring against a stub |
 
 ## Commands
@@ -41,7 +42,28 @@ npm run check
 
 `npm run watch` rebuilds on every change.
 
-## Loading in Logseq
+## Install
+
+In Logseq, open the command palette and run **Install plugin from GitHub release**. Paste
+`https://github.com/trp-del/quiet-and-still`, tick the **effect** box, and press Install.
+Without the tick the plugin can still restyle Logseq, but peek, repeat mentions and the key
+can't reach the page. **Check update** on the plugin's card brings the next version.
+
+Or download the zip from the latest release, unzip it, and load the folder with
+**Load unpacked plugin** (Developer mode on).
+
+## Releasing
+
+No GitHub Actions: releases are built by hand.
+
+```bash
+sh scripts/release.sh
+```
+
+That builds `dist/quiet-and-still-v<version>.zip` from the version in `package.json`. Tag
+the commit `v<version>`, push the tag, and attach the zip to a GitHub release of that tag.
+
+## Loading from source
 
 Run `npm run build`, then in Logseq: Settings → Advanced → Developer mode on, then
 Plugins → Load unpacked plugin → choose this folder. Pick a system and switch

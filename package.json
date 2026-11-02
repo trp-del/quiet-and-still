@@ -2,12 +2,19 @@
   "name": "logseq-quiet-and-still",
   "version": "0.1.0",
   "description": "Fades non-essential Logseq DB UI while keeping split-second visual keys for each type of information.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trp-del/quiet-and-still.git"
+  },
+  "effect": true,
   "main": "dist/index.html",
   "logseq": {
     "id": "quiet-and-still",
     "title": "Quiet & Still",
     "main": "dist/index.html",
-    "icon": "./icon.svg"
+    "icon": "./icon.svg",
+    "supportsDB": true,
+    "supportsDBOnly": true
   },
   "dependencies": {
     "@logseq/libs": "^0.3.4"
