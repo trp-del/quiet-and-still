@@ -1,0 +1,719 @@
+<title>Quiet & Still Next Ten</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Layout: a single reading column; each proposal pairs its argument (left) with a live demo (right).
+   The page follows the plugin's own rules: ink for content, quiet for meta, one amber for live state. */
+:root {
+  --bg: #ededea; --surface: #f7f7f5; --pane: #ffffff; --fg: #232327; --muted: #6c6b67; --line: #d9d8d3;
+  --accent: #c26a16;                     /* Still's --qs-state: live state only */
+  --mark: color-mix(in srgb, #f2d43a 38%, transparent);
+  --ink: #2f2f33;                        /* the mock's Logseq text color */
+  --ok: #3aa76d; --err: #d64545;         /* Logseq's own status hues, shown in "today" demos only */
+  --lsl-bg: #ffffff; --lsl-ink: #2f2f33; --lsd-bg: #1c1c20; --lsd-ink: #d9d9de;
+  --whisper: .12; --quiet: .4; --ease: 150ms ease;
+  --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --body: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --app: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111113; --surface: #18181b; --pane: #1c1c20; --fg: #e6e5e1; --muted: #8f8d87; --line: #2c2c31;
+  --accent: #f0a04b; --mark: color-mix(in srgb, #e8c840 24%, transparent); --ink: #d9d9de; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111113; --surface: #18181b; --pane: #1c1c20; --fg: #e6e5e1; --muted: #8f8d87; --line: #2c2c31;
+  --accent: #f0a04b; --mark: color-mix(in srgb, #e8c840 24%, transparent); --ink: #d9d9de; color-scheme: dark; }
+@media (prefers-reduced-motion: reduce) { :root { --ease: 0ms linear; } }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); margin: 0; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 48px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 500; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(34px, 5vw, 50px); line-height: 1.08; letter-spacing: -.01em; }
+h2 { font-size: 27px; line-height: 1.15; }
+h3 { font-size: 20px; }
+p { margin: 0; max-width: 64ch; }
+.lede { display: grid; gap: 14px; }
+.lede p { color: var(--muted); font-size: 16.5px; }
+.label { font: 11.5px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+code { font: .88em var(--mono); }
+
+/* index */
+.index { overflow-x: auto; border-top: 1px solid var(--line); }
+.index table { width: 100%; border-collapse: collapse; min-width: 640px; font-size: 14px; }
+.index th { text-align: left; font: 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 400; padding: 10px 12px 8px 0; }
+.index td { padding: 9px 12px 9px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.index td:first-child { font: 13px var(--mono); color: var(--muted); width: 36px; font-variant-numeric: tabular-nums; }
+.index a { color: inherit; text-decoration: none; font-weight: 500; }
+.index a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.index .muted { color: var(--muted); }
+
+/* moments */
+.moment { display: grid; gap: 28px; }
+.moment > header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.moment > header p { color: var(--muted); font-size: 14px; }
+
+/* a proposal */
+.prop { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; align-items: start; scroll-margin-top: 24px; }
+@media (max-width: 880px) { .prop { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
+.argue { display: grid; gap: 12px; }
+.argue .num { font: 13px var(--mono); color: var(--muted); }
+.argue .why { font-size: 14px; color: var(--muted); }
+.argue .why b { color: var(--fg); font-weight: 600; }
+.meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; margin: 4px 0 0; }
+.meta dt { font: 11px/1.9 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.meta dd { margin: 0; }
+.rule { display: inline-block; font-size: 12px; padding: 1px 7px; border: 1px solid var(--line); border-radius: 999px; margin: 0 4px 4px 0; color: var(--muted); }
+.rule b { color: var(--fg); font-weight: 600; margin-right: 3px; }
+
+.demo { display: grid; gap: 10px; min-width: 0; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: 13px; color: var(--muted); }
+button { font: inherit; }
+.btn { font-size: 13px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); cursor: pointer; }
+.btn:hover { border-color: color-mix(in srgb, var(--fg) 30%, transparent); }
+.btn:active, .btn.down { background: var(--pane); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { font-size: 13px; padding: 4px 11px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--pane); color: var(--fg); }
+.cap { font-size: 12.5px; color: var(--muted); }
+
+/* ── Logseq stand-in, styled at Still's levels ───────────────────────── */
+.pane { background: var(--pane); color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+  font: 13.5px/1.6 var(--app); position: relative; overflow: hidden; }
+.w { opacity: var(--whisper); transition: opacity var(--ease); }
+.q { opacity: var(--quiet); transition: opacity var(--ease); }
+.app { display: grid; grid-template-rows: 32px 1fr; }
+.hdr { display: flex; align-items: center; gap: 12px; padding: 0 12px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); font-size: 13px; }
+.hdr .sp { flex: 1; }
+.body { display: grid; grid-template-columns: 32% 1fr; min-height: 190px; }
+.side { padding: 10px 10px; display: grid; align-content: start; gap: 2px; background: color-mix(in srgb, var(--ink) 3%, transparent); font-size: 12.5px; }
+.side .gh { font-size: 10px; letter-spacing: .05em; text-transform: uppercase; margin-top: 6px; }
+.main { padding: 14px 18px; display: grid; align-content: start; gap: 2px; min-width: 0; }
+.ptitle { font: 600 20px/1.3 var(--app); margin-bottom: 6px; color: var(--ink); }
+.prow { font-size: .78em; color: color-mix(in srgb, var(--ink) 65%, transparent); }
+.prow .k { color: color-mix(in srgb, var(--ink) 45%, transparent); display: inline-block; min-width: 9.5em; }
+.line { display: flex; gap: 8px; align-items: baseline; }
+.bul { width: 5px; height: 5px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 20%, transparent); flex-shrink: 0; transform: translateY(-2px); }
+.ref { text-decoration: underline dotted; text-decoration-color: color-mix(in srgb, var(--ink) 45%, transparent); text-underline-offset: 3px; transition: text-decoration-color var(--ease); }
+.bref { text-decoration: underline dashed; text-decoration-color: color-mix(in srgb, var(--ink) 40%, transparent); text-underline-offset: 3px; }
+.tag { font-size: .78em; color: color-mix(in srgb, var(--ink) 40%, transparent); }
+.mk { background: var(--mark); border-radius: 2px; padding: 0 1px; }
+.chk { width: 11px; height: 11px; border: 1.3px solid color-mix(in srgb, var(--ink) 55%, transparent); border-radius: 3px; display: inline-block; flex-shrink: 0; transform: translateY(1px); }
+.chk.on { background: color-mix(in srgb, var(--ink) 55%, transparent); }
+.doing { color: var(--accent); font-size: 12px; }
+.done { opacity: .3; }
+
+/* 1 orient */
+#d1.fresh .w, #d1.fresh .q { opacity: 1; transition: none; }
+.timeline { position: relative; height: 22px; border-top: 1px solid var(--line); font: 11px var(--mono); color: var(--muted); }
+.timeline span { position: absolute; top: 4px; }
+.timeline .tick { position: absolute; top: -4px; width: 1px; height: 7px; background: var(--line); }
+.timeline .head { position: absolute; top: -4px; width: 2px; height: 7px; background: var(--accent); left: 0; opacity: 0; }
+
+/* 2 dwell */
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 560px) { .pair { grid-template-columns: 1fr; } }
+.pair .pane .body { min-height: 150px; }
+.pair figure { margin: 0; display: grid; gap: 6px; }
+.pair figcaption { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); }
+.pair figcaption b { font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; }
+.side.hot .w, .side.hot .q, .side:hover .w, .side:hover .q { opacity: 1; }
+.dwell .side .w, .dwell .side .q { transition: opacity 150ms ease 0ms; }
+.dwell .side:is(.hot, :hover) .w, .dwell .side:is(.hot, :hover) .q { transition-delay: 140ms; }
+.cursor { position: absolute; width: 14px; height: 18px; pointer-events: none; opacity: 0; z-index: 3; }
+.cursor path { fill: var(--fg); stroke: var(--pane); stroke-width: 1.2; }
+
+/* 3 peek */
+#d3.peek .w, #d3.peek .q { opacity: 1; }
+kbd { font: 12px var(--mono); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--surface); color: var(--fg); }
+
+/* 4 lit branch */
+.outline { padding: 14px 16px; }
+.blk > .row { display: flex; gap: 8px; align-items: baseline; padding: 1px 6px; border-radius: 4px; cursor: text; }
+.blk > .row:hover { background: color-mix(in srgb, var(--ink) 3%, transparent); }
+.blk > .row .bul { transition: background-color var(--ease); }
+.kids { margin-left: 8px; padding-left: 12px; border-left: 1px solid color-mix(in srgb, var(--ink) 5%, transparent); transition: border-color var(--ease); }
+.blk.editing > .row { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.blk.editing > .row .t::after { content: ""; display: inline-block; width: 1.5px; height: 1.05em; background: var(--ink); margin-left: 1px; vertical-align: -2px; }
+[data-mode="proposed"] .kids.lit { border-left-color: color-mix(in srgb, var(--ink) 35%, transparent); }
+[data-mode="proposed"] .blk.anc > .row .bul { background: color-mix(in srgb, var(--ink) 55%, transparent); }
+
+/* 5 empty */
+.props5 { display: grid; gap: 1px; margin-bottom: 4px; }
+.props5 .prow { transition: opacity var(--ease); }
+.addp { font-size: .78em; }
+[data-mode="proposed"] .empty, [data-mode="proposed"] .addp, [data-mode="proposed"] .trail { opacity: var(--whisper); }
+.trail { opacity: 1; transition: opacity var(--ease); }
+
+/* 6 first mention */
+[data-mode="proposed"] .ref.rep { text-decoration-color: color-mix(in srgb, var(--ink) 12%, transparent); }
+
+/* 7 time */
+.task { display: flex; gap: 8px; align-items: baseline; }
+.date { font-size: .82em; color: color-mix(in srgb, var(--ink) 50%, transparent); margin-left: auto; white-space: nowrap; transition: color var(--ease); font-variant-numeric: tabular-nums; }
+[data-mode="proposed"] .date.live { color: var(--accent); }
+[data-mode="proposed"] .date.later { color: color-mix(in srgb, var(--ink) 35%, transparent); }
+
+/* 8 status */
+.strip { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); font-size: 12.5px; }
+.strip .sp { flex: 1; }
+.dot { width: 7px; height: 7px; border-radius: 50%; transition: background-color var(--ease), opacity var(--ease); }
+.toastbox { min-height: 74px; padding: 10px 12px; position: relative; }
+.toast { font-size: 12.5px; padding: 7px 10px; border-radius: 6px; max-width: 260px; margin-left: auto; }
+.today .dot { background: var(--ok); }
+.today[data-state="failed"] .dot { background: var(--err); }
+.today .toast { background: color-mix(in srgb, var(--err) 14%, var(--pane)); border: 1px solid color-mix(in srgb, var(--err) 40%, transparent); opacity: 0; transform: translateX(60px); transition: transform 320ms cubic-bezier(.3,1.6,.6,1), opacity 200ms; }
+.today[data-state="failed"] .toast { opacity: 1; transform: none; }
+.calm .status { opacity: var(--whisper); transition: opacity var(--ease); }
+.calm .dot { background: var(--ink); }
+.calm[data-state="saving"] .status { opacity: var(--quiet); }
+.calm[data-state="failed"] .status { opacity: 1; }
+.calm[data-state="failed"] .dot { background: var(--accent); }
+.calm .toast { border-left: 2px solid var(--accent); padding-left: 10px; opacity: 0; transition: opacity var(--ease); }
+.calm[data-state="failed"] .toast { opacity: 1; }
+.calm .status .txt::after { content: "Synced"; }
+.calm[data-state="saving"] .status .txt::after { content: "Saving"; }
+.calm[data-state="failed"] .status .txt::after { content: "Sync paused"; }
+.today .status .txt::after { content: "Synced"; }
+.today[data-state="saving"] .status .txt::after { content: "Saving…"; }
+.today[data-state="failed"] .status .txt::after { content: "Sync failed"; }
+
+/* 9 floor */
+.floorgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 560px) { .floorgrid { grid-template-columns: 1fr; } }
+.swatch { border-radius: 8px; padding: 14px 14px 12px; display: grid; gap: 10px; font: 13px/1.5 var(--app); border: 1px solid var(--line); }
+.swatch.l { background: var(--lsl-bg); color: var(--lsl-ink); }
+.swatch.d { background: var(--lsd-bg); color: var(--lsd-ink); }
+.swatch .chromeline { display: flex; gap: 14px; }
+.swatch .tlabel { font: 10.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; opacity: .55; }
+.meter { position: relative; height: 26px; }
+.meter .track { position: absolute; top: 6px; left: 0; right: 0; height: 3px; border-radius: 2px; background: currentColor; opacity: .14; }
+.meter .fl { position: absolute; top: 2px; width: 1px; height: 11px; background: currentColor; opacity: .5; }
+.meter .val { position: absolute; top: 1px; width: 9px; height: 13px; margin-left: -4.5px; border-radius: 2px; transition: left var(--ease); }
+.meter .lab { position: absolute; top: 14px; font: 10px var(--mono); opacity: .6; transform: translateX(-50%); white-space: nowrap; }
+.read { font: 12px var(--mono); font-variant-numeric: tabular-nums; }
+.read .fail { color: var(--err); }
+.swatch.l .val.pass { background: #2f7d55; } .swatch.l .val.fail { background: #c53b3b; }
+.swatch.d .val.pass { background: #57c08a; } .swatch.d .val.fail { background: #ea6a6a; }
+input[type="range"] { accent-color: var(--accent); width: 180px; max-width: 100%; }
+label.ck { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+
+/* 10 key */
+.keygrid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 0; }
+@media (max-width: 560px) { .keygrid { grid-template-columns: 1fr; } }
+.keygrid .main { padding: 16px 18px; gap: 4px; }
+.legend { border-left: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); padding: 10px 8px; display: grid; align-content: start; gap: 1px; background: color-mix(in srgb, var(--ink) 2%, transparent); }
+@media (max-width: 560px) { .legend { border-left: 0; border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); } }
+.legend .lh { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: color-mix(in srgb, var(--ink) 45%, transparent); padding: 2px 8px 6px; }
+.legend button { display: grid; grid-template-columns: 74px 1fr; gap: 8px; align-items: baseline; text-align: left; background: transparent; border: 0; color: var(--ink); padding: 3px 8px; border-radius: 5px; cursor: default; font: 12.5px/1.45 var(--app); }
+.legend button:hover, .legend button:focus-visible { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.legend .ch { color: color-mix(in srgb, var(--ink) 50%, transparent); font-size: 11.5px; }
+#d10 .pl, #d10 [data-k] { transition: opacity var(--ease); }
+#d10.spotting .pl, #d10.spotting .main [data-k]:not(.on) { opacity: .15; }
+
+/* set aside */
+.aside { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+@media (max-width: 760px) { .aside { grid-template-columns: 1fr; } }
+.aside div { display: grid; gap: 6px; align-content: start; border-top: 1px solid var(--line); padding-top: 12px; }
+.aside p { font-size: 14px; color: var(--muted); }
+.aside h3 { font-size: 18px; }
+</style>
+
+<div class="wrap">
+
+<section class="lede">
+  <span class="label">Quiet &amp; Still · proposals · November 2026</span>
+  <h1>The chrome has receded. Here are ten ways to make the quiet work harder.</h1>
+  <p>The plugin already sets every element to one of three volumes. The next gains are about <em>when</em> volume changes, what earns it back, and whether people can still find and learn what has gone quiet. Every proposal below keeps the ten rules in <code>RULES.md</code>; each says which ones it extends and how it would ship. The demos run at Still's real levels: whisper 0.12, quiet 0.4, amber for live state only.</p>
+</section>
+
+<nav class="index" aria-label="All proposals">
+  <table>
+    <thead><tr><th>#</th><th>Proposal</th><th>Moment</th><th>Extends rules</th><th>Ships as</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><a href="#p1">Orient, then recede</a></td><td class="muted">Arriving</td><td>4, 10</td><td class="muted">Small JS on route change</td></tr>
+      <tr><td>2</td><td><a href="#p2">Dwell before reveal</a></td><td class="muted">Arriving</td><td>4, 10</td><td class="muted">CSS: one new token</td></tr>
+      <tr><td>3</td><td><a href="#p3">Peek key</a></td><td class="muted">Working</td><td>2, 4</td><td class="muted">Command + root class</td></tr>
+      <tr><td>4</td><td><a href="#p4">Lit branch</a></td><td class="muted">Working</td><td>1, 4, 8</td><td class="muted">CSS with <code>:has()</code></td></tr>
+      <tr><td>5</td><td><a href="#p5">Empty is quieter than full</a></td><td class="muted">Working</td><td>2, 3</td><td class="muted">CSS with <code>:has()</code></td></tr>
+      <tr><td>6</td><td><a href="#p6">First mention carries the line</a></td><td class="muted">Working</td><td>5, 6</td><td class="muted">Small JS observer</td></tr>
+      <tr><td>7</td><td><a href="#p7">Time is state</a></td><td class="muted">Noticing</td><td>7, 8</td><td class="muted">Small JS, reuses <code>--qs-state</code></td></tr>
+      <tr><td>8</td><td><a href="#p8">Status speaks on change</a></td><td class="muted">Noticing</td><td>8, 10</td><td class="muted">CSS</td></tr>
+      <tr><td>9</td><td><a href="#p9">A floor for findability</a></td><td class="muted">Trusting</td><td>2, 6</td><td class="muted">Build step + test</td></tr>
+      <tr><td>10</td><td><a href="#p10">The key, on demand</a></td><td class="muted">Trusting</td><td>5, 6</td><td class="muted">Command, reads <code>system.keys</code></td></tr>
+    </tbody>
+  </table>
+</nav>
+
+<!-- ───────────── ARRIVING ───────────── -->
+<section class="moment">
+  <header><h2>Arriving</h2><p>The first second on a page, and the pointer passing through.</p></header>
+
+  <article class="prop" id="p1">
+    <div class="argue">
+      <span class="num">01</span>
+      <h3>Orient, then recede</h3>
+      <p>When a page opens, the chrome shows at full volume for one beat, then fades to its level. You get a glance at where you are and what is around you, and then it gets out of the way.</p>
+      <p class="why"><b>Why it helps.</b> Whisper-level chrome is hard to locate cold. One orienting glance builds the spatial memory that lets you reach for it later without looking.</p>
+      <dl class="meta">
+        <dt>Extends</dt><dd><span class="rule"><b>4</b>Attention restores volume</span><span class="rule"><b>10</b>Calm motion</span></dd>
+        <dt>Ships as</dt><dd>New element <code>chrome.orient</code>: add a class on route change, drop it after 900 ms. The fade back stays 150 ms on opacity.</dd>
+      </dl>
+    </div>
+    <div class="demo">
+      <div class="pane app" id="d1"></div>
+      <div class="timeline" aria-hidden="true">
+        <i class="tick" style="left:0"></i><span style="left:0">0 ms · full</span>
+        <i class="tick" style="left:75%"></i><span style="left:62%">900 ms · recede</span>
+        <i class="head" id="d1head"></i>
+      </div>
+      <div class="controls"><button class="btn" id="d1go">Open the page</button><span>Opens at full volume, settles after one beat.</span></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p2">
+    <div class="argue">
+      <span class="num">02</span>
+      <h3>Dwell before reveal</h3>
+      <p>A region restores only after the pointer rests on it for about 140 ms. Pointers crossing the sidebar on the way to the dock or the window edge no longer make it flash.</p>
+      <p class="why"><b>Why it helps.</b> An unrequested reveal pulls the eye just as much as a notification does. Hover intent separates "I'm going there" from "I'm passing through".</p>
+      <dl class="meta">
+        <dt>Extends</dt><dd><span class="rule"><b>4</b>Attention restores volume</span><span class="rule"><b>10</b>Calm motion</span></dd>
+        <dt>Ships as</dt><dd>One token, <code>--qs-dwell: 140ms</code>, used as <code>transition-delay</code> on every hover state. Fading back out keeps no delay. Focus restores at once.</dd>
+      </dl>
+    </div>
+    <div class="demo">
+      <div class="pair">
+        <figure><figcaption><span>Today</span><span>Unrequested reveals <b id="d2c0">0</b></span></figcaption><div class="pane app" id="d2a"></div></figure>
+        <figure><figcaption><span>With dwell</span><span>Unrequested reveals <b id="d2c1">0</b></span></figcaption><div class="pane app dwell" id="d2b"></div></figure>
+      </div>
+      <div class="controls"><button class="btn" id="d2go">Play the pointer</button><span>It crosses the sidebar quickly, then comes back and rests. Your own pointer works too.</span></div>
+    </div>
+  </article>
+</section>
+
+<!-- ───────────── WORKING ───────────── -->
+<section class="moment">
+  <header><h2>Working</h2><p>Writing and editing: knowing where you are, and what's there when you need it.</p></header>
+
+  <article class="prop" id="p3">
+    <div class="argue">
+      <span class="num">03</span>
+      <h3>Peek key</h3>
+      <p>Hold a key and everything returns to full volume. Let go and it recedes again. It works the same everywhere, so the quiet never has to be undone in settings.</p>
+      <p class="why"><b>Why it helps.</b> Fading is easier to trust when it can be reversed instantly. It gives keyboard users the same "attention restores volume" that hover gives the mouse.</p>
+      <dl class="meta">
+        <dt>Extends</dt><dd><span class="rule"><b>2</b>Fade, never remove</span><span class="rule"><b>4</b>Attention restores volume</span></dd>
+        <dt>Ships as</dt><dd>A configurable hold key plus a command "Quiet &amp; Still: peek". JS toggles <code>html.qs-peek</code>; one CSS rule sets the levels to 1.</dd>
+      </dl>
+    </div>
+    <div class="demo">
+      <div class="pane app" id="d3"></div>
+      <div class="controls"><button class="btn" id="d3go">Hold to peek</button><span>or hold <kbd>⌥</kbd></span></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p4">
+    <div class="argue">
+      <span class="num">04</span>
+      <h3>Lit branch</h3>
+      <p>The thread lines and bullets on the path to the block you're editing rise from whisper to quiet. The rest of the outline stays as it is. Text is never dimmed.</p>
+      <p class="why"><b>Why it helps.</b> In a deep outline it's easy to lose which parent you're under. The lit path answers that without breadcrumbs or a box, and it's live state, not a category.</p>
+      <dl class="meta">
+        <dt>Extends</dt><dd><span class="rule"><b>1</b>Content is loudest</span><span class="rule"><b>4</b>Attention restores</span><span class="rule"><b>8</b>State beats category</span></dd>
+        <dt>Ships as</dt><dd>Pure CSS: <code>.block-children-container:has(.editor-inner) &gt; .block-children-left-border</code>. No JS.</dd>
+      </dl>
+    </div>
+    <div class="demo">
+      <div class="pane outline" id="d4" data-mode="proposed">
+        <div class="blk"><div class="row"><span class="bul"></span><span class="t">Consultations this month</span></div>
+          <div class="kids">
+            <div class="blk"><div class="row"><span class="bul"></span><span class="t">Saw <span class="ref">Dr. Helen Brooks</span> about being tired all the time</span></div>
+              <div class="kids">
+                <div class="blk"><div class="row"><span class="bul"></span><span class="t">She took bloods</span></div></div>
+                <div class="blk"><div class="row"><span class="bul"></span><span class="t">Said it is probably the winter</span></div>
+                  <div class="kids"><div class="blk editing"><div class="row"><span class="bul"></span><span class="t">Ask about vitamin D next time</span></div></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="blk"><div class="row"><span class="bul"></span><span class="t">Appointment with <span class="ref">Dr. Tom Okonkwo</span></span></div>
+              <div class="kids">
+                <div class="blk"><div class="row"><span class="bul"></span><span class="t">Listened properly, which is rarer than it should be</span></div></div>
+                <div class="blk"><div class="row"><span class="bul"></span><span class="t">Referred for a sleep study</span></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="controls"><span class="seg" data-target="d4"><button aria-pressed="false" data-mode="today">Today</button><button aria-pressed="true" data-mode="proposed">Proposed</button></span><span>Click any block to edit it.</span></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p5">
+    <div class="argue">
+      <span class="num">05</span>
+      <h3>Empty is quieter than full</h3>
+      <p>Empty property values, the <code>---</code> placeholder, "Add property" and the trailing empty bullet drop to whisper. Filled properties stay quiet. A glance at the property area now shows what is known.</p>
+      <p class="why"><b>Why it helps.</b> Placeholders look like data, so the eye reads them as data. On the Fatigue page, three of four property rows are empty and they all compete equally today.</p>
+      <dl class="meta">
+        <dt>Extends</dt><dd><span class="rule"><b>2</b>Fade, never remove</span><span class="rule"><b>3</b>Three levels</span></dd>
+        <dt>Ships as</dt><dd>CSS with <code>:has()</code> on empty property values. The DB build's empty-value selector still needs checking.</dd>
+      </dl>
+    </div>
+    <div class="demo">
+      <div class="pane" id="d5" data-mode="proposed">
+        <div class="main">
+          <div class="ptitle">Fatigue</div>
+          <div class="props5">
+            <div class="prow filled"><span class="k">Started</span><span class="v">Oct 21st, 2026</span></div>
+            <div class="prow empty"><span class="k">Diagnosed by</span><span class="v">---</span></div>
+            <div class="prow empty"><span class="k">Confirmation status</span><span class="v">---</span></div>
+            <div class="prow empty"><span class="k">Test choice to links</span><span class="v"></span></div>
+            <div class="addp" style="color:color-mix(in srgb,var(--ink) 55%,transparent)">+ Add property</div>
+          </div>
+          <div class="line"><span class="bul"></span><span>Spoke with <span class="ref">Dr. Mei Chen</span> about fatigue</span></div>
+          <div class="line"><span class="bul"></span><span>Worse in the evenings</span></div>
+          <div class="line trail"><span class="bul"></span><span></span></div>
+        </div>
+      </div>
+      <div class="controls"><span class="seg" data-target="d5"><button aria-pressed="false" data-mode="today">Today</button><button aria-pressed="true" data-mode="proposed">Proposed</button></span></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p6">
+    <div class="argue">
+      <span class="num">06</span>
+      <h3>First mention carries the line</h3>
+      <p>The first time a page is referenced on a page, its underline is full strength. Later mentions keep the same dotted line at whisper. They are still clearly links, just no longer repeated news.</p>
+      <p class="why"><b>Why it helps.</b> Writers say "given, then new". Five underlined <em>Dr. Mei Chen</em>s down a column make a pattern that the eye keeps scanning. One per page is enough to say "this is a link".</p>
+      <dl class="meta">
+        <dt>Extends</dt><dd><span class="rule"><b>5</b>One type, one channel</span><span class="rule"><b>6</b>Small but reliable</span></dd>
+        <dt>Ships as</dt><dd>A small MutationObserver that marks repeat refs per page container. Opt-in, since it is the plugin's first per-render JS.</dd>
+      </dl>
+    </div>
+    <div class="demo">
+      <div class="pane" id="d6" data-mode="proposed">
+        <div class="main">
+          <div class="line"><span class="bul"></span><span>Spoke with <span class="ref">Dr. Mei Chen</span> about fatigue</span></div>
+          <div class="line"><span class="bul"></span><span>Saw <span class="ref">Dr. Helen Brooks</span> about being tired all the time</span></div>
+          <div class="line"><span class="bul"></span><span>Appointment with <span class="ref">Dr. Tom Okonkwo</span>: how wiped out I get</span></div>
+          <div class="line"><span class="bul"></span><span><span class="ref">Dr. Helen Brooks</span> went through being so tired</span></div>
+          <div class="line"><span class="bul"></span><span>Saw <span class="ref">Dr. Raj Patel</span>. Prescribed something for it</span></div>
+          <div class="line"><span class="bul"></span><span>Saw <span class="ref">Dr. Mei Chen</span>. Nothing to do but wait and see</span></div>
+          <div class="line"><span class="bul"></span><span>Spoke with <span class="ref">Dr. Mei Chen</span>, worse in the evenings</span></div>
+          <div class="line"><span class="bul"></span><span><span class="ref">Dr. Raj Patel</span> wants a follow-up in two weeks</span></div>
+        </div>
+      </div>
+      <div class="controls"><span class="seg" data-target="d6"><button aria-pressed="false" data-mode="today">Today</button><button aria-pressed="true" data-mode="proposed">Proposed</button></span></div>
+    </div>
+  </article>
+</section>
+
+<!-- ───────────── NOTICING ───────────── -->
+<section class="moment">
+  <header><h2>Noticing</h2><p>The few things that should break the quiet, and only while they matter.</p></header>
+
+  <article class="prop" id="p7">
+    <div class="argue">
+      <span class="num">07</span>
+      <h3>Time is state</h3>
+      <p>A date due today or overdue takes the amber Still already reserves for live state. Dates further out step back to quiet. Nothing new is added to the palette.</p>
+      <p class="why"><b>Why it helps.</b> All dates look the same today, so you have to read each one to find what's pressing. Overdue is the most live state a date can have.</p>
+      <dl class="meta">
+        <dt>Extends</dt><dd><span class="rule"><b>7</b>Color is scarce</span><span class="rule"><b>8</b>State beats category</span></dd>
+        <dt>Ships as</dt><dd>JS compares scheduled and deadline values to today and adds <code>data-qs-when</code>. It reuses <code>--qs-state</code>, so the four-hue budget holds.</dd>
+      </dl>
+    </div>
+    <div class="demo">
+      <div class="pane" id="d7" data-mode="proposed">
+        <div class="main" style="gap:5px">
+          <div class="task"><span class="chk"></span><span>Refill melatonin</span><span class="date live">Deadline Oct 30th · 3 days late</span></div>
+          <div class="task"><span class="chk"></span><span>Book blood test with <span class="ref">Dr. Helen Brooks</span></span><span class="date live">Scheduled today</span></div>
+          <div class="task"><span class="chk"></span><span>Sleep study intake form</span><span class="date later">Scheduled Nov 18th</span></div>
+          <div class="task"><span class="chk"></span><span>Review symptoms with <span class="ref">Dr. Raj Patel</span></span><span class="date later">Scheduled Dec 4th</span></div>
+          <div class="task done"><span class="chk on"></span><span>Fill in symptom diary</span><span class="date">Oct 28th</span></div>
+        </div>
+      </div>
+      <div class="controls"><span class="seg" data-target="d7"><button aria-pressed="false" data-mode="today">Today</button><button aria-pressed="true" data-mode="proposed">Proposed</button></span><span>"Today" here is Nov 2nd, 2026.</span></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p8">
+    <div class="argue">
+      <span class="num">08</span>
+      <h3>Status speaks on change</h3>
+      <p>Sync and saving indicators whisper while things are fine. When something needs you, the indicator rises to full volume in the state hue and a notice fades in. It doesn't slide or bounce.</p>
+      <p class="why"><b>Why it helps.</b> A green dot that is always on teaches the eye to ignore it, and then it gets ignored when it turns red. Silence while steady makes the change easy to see.</p>
+      <dl class="meta">
+        <dt>Extends</dt><dd><span class="rule"><b>8</b>State beats category</span><span class="rule"><b>10</b>Calm motion</span></dd>
+        <dt>Ships as</dt><dd>CSS on the header sync indicator and the notification container. It overrides their slide-in with a 150 ms fade.</dd>
+      </dl>
+    </div>
+    <div class="demo">
+      <div class="pair">
+        <figure><figcaption><span>Today</span></figcaption>
+          <div class="pane today" id="d8a" data-state="steady"><div class="strip"><span>Fatigue</span><span class="sp"></span><span class="status"><span class="txt"></span></span><span class="dot"></span></div><div class="toastbox"><div class="toast">Sync failed. Check your connection.</div></div></div></figure>
+        <figure><figcaption><span>Proposed</span></figcaption>
+          <div class="pane calm" id="d8b" data-state="steady"><div class="strip"><span>Fatigue</span><span class="sp"></span><span class="status" style="display:flex;gap:8px;align-items:center"><span class="txt"></span><span class="dot"></span></span></div><div class="toastbox"><div class="toast">Sync paused. Your notes are saved here and will sync when you're back online.</div></div></div></figure>
+      </div>
+      <div class="controls"><span class="seg" id="d8seg"><button aria-pressed="true" data-s="steady">Steady</button><button aria-pressed="false" data-s="saving">Saving</button><button aria-pressed="false" data-s="failed">Sync fails</button></span></div>
+    </div>
+  </article>
+</section>
+
+<!-- ───────────── TRUSTING ───────────── -->
+<section class="moment">
+  <header><h2>Trusting</h2><p>Quiet only works if people can still find things and learn what the keys mean.</p></header>
+
+  <article class="prop" id="p9">
+    <div class="argue">
+      <span class="num">09</span>
+      <h3>A floor for findability</h3>
+      <p>"Fade, never remove" needs a measurable floor. The build clamps each system's whisper so faded chrome keeps at least 1.5:1 contrast in both themes. It also honours <code>prefers-contrast: more</code> and <code>prefers-reduced-motion</code>.</p>
+      <p class="why"><b>Why it helps.</b> Still's whisper of 0.12 measures about 1.25:1 on white and 1.34:1 on Logseq's dark background, so it is already below that floor. Below it, a whisper is effectively removed.</p>
+      <dl class="meta">
+        <dt>Extends</dt><dd><span class="rule"><b>2</b>Fade, never remove</span><span class="rule"><b>6</b>Small but reliable</span></dd>
+        <dt>Ships as</dt><dd>A contrast check in <code>build.ts</code>, a failing case in <code>consistency.test.mjs</code>, and two media queries in the base CSS.</dd>
+      </dl>
+    </div>
+    <div class="demo">
+      <div class="floorgrid">
+        <div class="swatch l"><span class="tlabel">Logseq light</span><div class="chromeline" id="d9l"><span>Journals</span><span>Pages</span><span>Graph view</span></div><div class="meter" id="d9ml"></div><div class="read" id="d9rl"></div></div>
+        <div class="swatch d"><span class="tlabel">Logseq dark</span><div class="chromeline" id="d9d"><span>Journals</span><span>Pages</span><span>Graph view</span></div><div class="meter" id="d9md"></div><div class="read" id="d9rd"></div></div>
+      </div>
+      <div class="controls">
+        <label for="d9r">Whisper</label><input type="range" id="d9r" min="0.04" max="0.5" step="0.01" value="0.12"><span class="read" id="d9v">0.12</span>
+        <label class="ck"><input type="checkbox" id="d9f" checked> Apply floor</label>
+        <label class="ck"><input type="checkbox" id="d9c"> Viewer asks for more contrast</label>
+      </div>
+    </div>
+  </article>
+
+  <article class="prop" id="p10">
+    <div class="argue">
+      <span class="num">10</span>
+      <h3>The key, on demand</h3>
+      <p>A command shows the current system's legend: each type, its channel, and a sample. Pointing at a row drops everything else to whisper so only that type stays lit.</p>
+      <p class="why"><b>Why it helps.</b> "Just noticeable" keys are only quick once you've learned them. Dotted versus dashed is easy to miss until someone shows you. The data is already there: each system declares <code>keys</code>.</p>
+      <dl class="meta">
+        <dt>Extends</dt><dd><span class="rule"><b>5</b>One type, one channel</span><span class="rule"><b>6</b>Small but reliable</span></dd>
+        <dt>Ships as</dt><dd>Command "Quiet &amp; Still: show the key". It renders <code>system.keys</code> in a popover and could open with the peek key too.</dd>
+      </dl>
+    </div>
+    <div class="demo">
+      <div class="pane keygrid" id="d10">
+        <div class="main">
+          <div class="line"><span class="doing" data-k="doing">◐</span><span><span class="pl">Write up the </span><span class="ref" data-k="ref">Dr. Raj Patel</span><span class="pl"> appointment </span><span class="tag" data-k="tag">#consultation</span></span></div>
+          <div class="line"><span class="chk" data-k="todo"></span><span><span class="pl">Ask about </span><span class="mk" data-k="mark">vitamin D levels</span><span class="pl"> next time</span></span></div>
+          <div class="line" style="padding-left:16px"><span class="prow" data-k="prop"><span class="k" style="min-width:7em">Diagnosed by</span>Dr. Mei Chen</span></div>
+          <div class="line"><span class="bul"></span><span><span class="ref" data-k="ref">Dr. Helen Brooks</span><span class="pl"> said the same: </span><span class="bref" data-k="bref">probably the winter</span></span></div>
+          <div class="line done" data-k="done"><span class="chk on"></span><span>Book blood test</span></div>
+          <div class="line"><span class="bul"></span><span><span class="pl">Follow up with </span><span class="ref" data-k="ref">Dr. Tom Okonkwo</span><span class="pl"> </span><span class="tag" data-k="tag">#sleep</span></span></div>
+        </div>
+        <div class="legend" aria-label="The key for Still">
+          <div class="lh">The key · Still</div>
+          <button data-k="ref"><span class="ref">Page</span><span class="ch">Page ref · ink, dotted underline</span></button>
+          <button data-k="bref"><span class="bref">Block</span><span class="ch">Block ref · ink, dashed underline</span></button>
+          <button data-k="tag"><span class="tag">#tag</span><span class="ch">Tag · small and pale</span></button>
+          <button data-k="prop"><span class="prow">key</span><span class="ch">Properties · small pencil grey</span></button>
+          <button data-k="doing"><span class="doing">◐</span><span class="ch">Doing · amber icon, the only hue</span></button>
+          <button data-k="todo"><span><span class="chk"></span></span><span class="ch">Open task · grey checkbox</span></button>
+          <button data-k="mark"><span class="mk">text</span><span class="ch">Highlight · pale yellow fill</span></button>
+          <button data-k="done"><span class="done">done</span><span class="ch">Done · strongly faded</span></button>
+        </div>
+      </div>
+      <div class="controls"><span>Point at or tab through a row of the key.</span></div>
+    </div>
+  </article>
+</section>
+
+<section class="moment">
+  <header><h2>Considered and set aside</h2><p>Ideas that sound calm but break a rule.</p></header>
+  <div class="aside">
+    <div><h3>Typewriter dimming</h3><p>Dimming every block except the one you're editing breaks rule 1: block text keeps full ink. The lit branch (4) gives the same sense of place without taking volume from content.</p></div>
+    <div><h3>Hide chrome while typing</h3><p>Hiding chrome while you type breaks rule 2: if you can't see it exists, you can't reach for it. Dwell (2) and the peek key (3) handle that without removing anything.</p></div>
+    <div><h3>Tint blocks by depth</h3><p>Coloring each level of nesting would spend hue on category, not state, and exceed the four-hue budget. That breaks rules 7 and 8.</p></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  // Shared app mock for 1, 2, 3
+  const app = (extra = "") => `
+    <div class="hdr"><span class="w">☰</span><span class="w">⌕ Search</span><span class="sp"></span><span class="w">←</span><span class="w">→</span><span class="w">⋯</span></div>
+    <div class="body">
+      <aside class="side">
+        <div class="w" style="font-weight:600">Illness Test Graph</div>
+        <div class="gh w">Navigations</div>
+        <div class="q">Journals</div><div class="q">Pages</div><div class="q">Graph view</div>
+        <div class="gh w">Recent</div>
+        <div class="q">Dr. Mei Chen</div><div class="q">Melatonin</div>
+      </aside>
+      <div class="main">
+        <div class="ptitle">Fatigue</div>
+        <div class="prow q"><span class="k">Started</span>Oct 21st, 2026</div>
+        ${extra}
+        <div class="line" style="margin-top:6px"><span class="bul"></span><span>Spoke with <span class="ref">Dr. Mei Chen</span> about fatigue</span></div>
+        <div class="line"><span class="bul"></span><span>Saw <span class="ref">Dr. Helen Brooks</span>. She took bloods.</span></div>
+        <div class="line"><span class="bul"></span><span>Worse in the evenings <span class="tag">#symptom</span></span></div>
+        <div class="q" style="font-size:12px;margin-top:10px">▸ Linked references · 14</div>
+      </div>
+    </div>`;
+  $("#d1").innerHTML = app();
+  $("#d2a").innerHTML = app();
+  $("#d2b").innerHTML = app();
+  $("#d3").innerHTML = app(`<div class="prow q"><span class="k">Diagnosed by</span>Dr. Mei Chen</div>`);
+
+  // 1 · orient, then recede
+  let t1;
+  const play1 = () => {
+    const d = $("#d1"), head = $("#d1head");
+    clearTimeout(t1);
+    d.classList.add("fresh");
+    head.style.transition = "none"; head.style.left = "0"; head.style.opacity = "1";
+    requestAnimationFrame(() => requestAnimationFrame(() => { head.style.transition = "left 1200ms linear"; head.style.left = "100%"; }));
+    t1 = setTimeout(() => { d.classList.remove("fresh"); setTimeout(() => (head.style.opacity = "0"), 300); }, 900);
+  };
+  $("#d1go").addEventListener("click", play1);
+
+  // 2 · dwell before reveal
+  const cursorSVG = `<svg class="cursor" viewBox="0 0 14 18"><path d="M1 1 L1 14 L4.5 10.8 L7 16.5 L9.2 15.5 L6.8 10 L11.5 10 Z"/></svg>`;
+  ["#d2a", "#d2b"].forEach((id) => $(id).insertAdjacentHTML("beforeend", cursorSVG));
+  const frames = [
+    { t: 0, x: 90, y: 60, v: 1 }, { t: 280, x: -6, y: 45, v: 1 }, { t: 281, x: -6, y: 45, v: 0 },
+    { t: 800, x: 80, y: 72, v: 0 }, { t: 801, x: 80, y: 72, v: 1 }, { t: 1300, x: 14, y: 46, v: 1 },
+    { t: 2900, x: 14, y: 46, v: 1 }, { t: 3300, x: 80, y: 72, v: 1 }, { t: 3301, x: 80, y: 72, v: 0 },
+  ];
+  const at = (t) => {
+    for (let i = 1; i < frames.length; i++) if (t <= frames[i].t) {
+      const a = frames[i - 1], b = frames[i], k = (t - a.t) / (b.t - a.t || 1);
+      return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, v: a.v };
+    }
+    return frames[frames.length - 1];
+  };
+  const counts = [0, 0];
+  let anim;
+  const play2 = () => {
+    cancelAnimationFrame(anim);
+    const panes = [$("#d2a"), $("#d2b")];
+    const state = panes.map(() => ({ hot: false, since: 0, counted: false }));
+    const start = performance.now();
+    const step = (now) => {
+      const t = now - start, p = at(t);
+      panes.forEach((pane, i) => {
+        const c = $(".cursor", pane), side = $(".side", pane);
+        c.style.left = p.x + "%"; c.style.top = p.y + "%"; c.style.opacity = p.v;
+        const hot = p.v === 1 && p.x >= 0 && p.x < 32;
+        const s = state[i];
+        if (hot && !s.hot) { s.hot = true; s.since = t; s.counted = false; side.classList.add("hot"); }
+        if (!hot && s.hot) { s.hot = false; side.classList.remove("hot"); }
+        // An unrequested reveal: the region started restoring while the pointer was only passing through (the first crossing).
+        if (s.hot && !s.counted && t < 700 && (i === 0 || t - s.since >= 140)) { s.counted = true; counts[i]++; $("#d2c" + i).textContent = counts[i]; }
+      });
+      if (t < 3400) anim = requestAnimationFrame(step);
+    };
+    anim = requestAnimationFrame(step);
+  };
+  $("#d2go").addEventListener("click", play2);
+
+  // 3 · peek key
+  const d3 = $("#d3"), b3 = $("#d3go");
+  const peek = (on) => { d3.classList.toggle("peek", on); b3.classList.toggle("down", on); };
+  b3.addEventListener("pointerdown", () => peek(true));
+  ["pointerup", "pointerleave", "pointercancel"].forEach((e) => b3.addEventListener(e, () => peek(false)));
+  b3.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); peek(true); } });
+  b3.addEventListener("keyup", () => peek(false));
+  addEventListener("keydown", (e) => { if (e.key === "Alt") peek(true); });
+  addEventListener("keyup", (e) => { if (e.key === "Alt") peek(false); });
+  addEventListener("blur", () => peek(false));
+
+  // segmented toggles
+  $$(".seg[data-target]").forEach((seg) => seg.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    $$("button", seg).forEach((x) => x.setAttribute("aria-pressed", x === b));
+    $("#" + seg.dataset.target).dataset.mode = b.dataset.mode;
+  }));
+
+  // 4 · lit branch
+  const d4 = $("#d4");
+  const light = (blk) => {
+    $$(".editing, .anc, .lit", d4).forEach((x) => x.classList.remove("editing", "anc", "lit"));
+    blk.classList.add("editing");
+    let p = blk.parentElement;
+    while (p && p !== d4) {
+      if (p.classList.contains("kids")) p.classList.add("lit");
+      if (p.classList.contains("blk")) p.classList.add("anc");
+      p = p.parentElement;
+    }
+  };
+  d4.addEventListener("click", (e) => { const r = e.target.closest(".row"); if (r) light(r.parentElement); });
+  light($(".blk.editing", d4));
+
+  // 6 · first mention
+  const seen = new Set();
+  $$("#d6 .ref").forEach((r) => { const k = r.textContent.trim(); if (seen.has(k)) r.classList.add("rep"); seen.add(k); });
+
+  // 8 · status
+  $("#d8seg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    $$("#d8seg button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    $("#d8a").dataset.state = $("#d8b").dataset.state = b.dataset.s;
+  });
+
+  // 9 · floor
+  const FLOOR = 1.5, LO = 1, HI = 3.5;
+  const lin = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const lum = (rgb) => 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
+  const blend = (bg, fg, a) => bg.map((c, i) => c * (1 - a) + fg[i] * a);
+  const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const themes = {
+    l: { bg: [255, 255, 255], ink: [47, 47, 51] },
+    d: { bg: [28, 28, 32], ink: [217, 217, 222] },
+  };
+  const minA = (th) => { for (let a = 0; a <= 1; a += 0.005) if (ratio(blend(th.bg, th.ink, a), th.bg) >= FLOOR) return a; return 1; };
+  const pos = (r) => Math.max(0, Math.min(100, ((r - LO) / (HI - LO)) * 100));
+  const meter = (el) => {
+    el.innerHTML = `<i class="track"></i><i class="fl" style="left:${pos(FLOOR)}%"></i><span class="lab" style="left:${pos(FLOOR)}%">floor 1.5</span><i class="fl" style="left:${pos(3)}%"></i><span class="lab" style="left:${pos(3)}%">WCAG UI 3.0</span><i class="val"></i>`;
+  };
+  meter($("#d9ml")); meter($("#d9md"));
+  const draw9 = () => {
+    let a = parseFloat($("#d9r").value);
+    $("#d9v").textContent = a.toFixed(2);
+    if ($("#d9c").checked) a = Math.max(a, 0.45);
+    ["l", "d"].forEach((k) => {
+      const th = themes[k], floorA = minA(th);
+      const eff = $("#d9f").checked ? Math.max(a, floorA) : a;
+      const r = ratio(blend(th.bg, th.ink, eff), th.bg), ok = r >= FLOOR - 1e-9;
+      $(k === "l" ? "#d9l" : "#d9d").style.opacity = eff;
+      const v = $(".val", $(k === "l" ? "#d9ml" : "#d9md"));
+      v.style.left = pos(r) + "%"; v.className = "val " + (ok ? "pass" : "fail");
+      $(k === "l" ? "#d9rl" : "#d9rd").innerHTML =
+        `opacity ${eff.toFixed(2)} · contrast ${r.toFixed(2)}:1` + (ok ? "" : ` · <span class="fail">below floor</span>`) +
+        `<br>floor needs ≥ ${floorA.toFixed(3)}`;
+    });
+  };
+  ["#d9r", "#d9f", "#d9c"].forEach((s) => $(s).addEventListener("input", draw9));
+  draw9();
+
+  // 10 · key on demand
+  const d10 = $("#d10");
+  const spot = (k) => {
+    d10.classList.toggle("spotting", !!k);
+    $$(".main [data-k]", d10).forEach((x) => x.classList.toggle("on", x.dataset.k === k));
+  };
+  $$(".legend button", d10).forEach((b) => {
+    b.addEventListener("pointerenter", () => spot(b.dataset.k));
+    b.addEventListener("focus", () => spot(b.dataset.k));
+    b.addEventListener("pointerleave", () => spot(null));
+    b.addEventListener("blur", () => spot(null));
+  });
+})();
+</script>

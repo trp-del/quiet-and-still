@@ -1,0 +1,26 @@
+{
+  "name": "logseq-quiet-and-still",
+  "version": "0.1.0",
+  "description": "Fades non-essential Logseq DB UI while keeping split-second visual keys for each type of information.",
+  "main": "dist/index.html",
+  "logseq": {
+    "id": "quiet-and-still",
+    "title": "Quiet & Still",
+    "main": "dist/index.html",
+    "icon": "./icon.svg"
+  },
+  "dependencies": {
+    "@logseq/libs": "^0.3.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  },
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "check": "tsc --noEmit",
+    "test": "npm run build && node --test \"tests/**/*.test.mjs\""
+  }
+}

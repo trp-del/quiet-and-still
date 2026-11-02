@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiet & Still — systems</title>
+<style>
+  /* ── Page chrome (not part of the plugin) ─────────────────────────────── */
+  :root {
+    --bg: #f4f3f0; --fg: #26251f; --muted: #7a776d; --line: #dedbd3; --card: #fbfaf8; --accent: #3f64a0;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17171a; --fg: #e6e4de; --muted: #8f8c84; --line: #2c2c31; --card: #1d1d21; --accent: #93b3e6;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17171a; --fg: #e6e4de; --muted: #8f8c84; --line: #2c2c31; --card: #1d1d21; --accent: #93b3e6;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 1480px; margin: 0 auto; padding: 28px 16px 64px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 0 0 20px; max-width: 70ch; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: flex-start;
+    padding: 14px 0 18px; border-bottom: 1px solid var(--line); margin-bottom: 22px;
+  }
+  .ctl-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .seg button {
+    font: inherit; font-size: 13px; padding: 4px 12px; border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: var(--card); color: var(--fg); }
+  .groups { display: flex; flex-wrap: wrap; gap: 14px 24px; }
+  .group { min-width: 150px; }
+  .group-name { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+  .el { display: flex; gap: 6px; align-items: baseline; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+  .el input { margin: 0; accent-color: var(--accent); }
+  .el .unv { color: var(--muted); font-size: 10.5px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr)); gap: 22px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .card-head { padding: 12px 14px 10px; border-bottom: 1px solid var(--line); }
+  .card-name { font-weight: 600; font-size: 14px; }
+  .card-idea { color: var(--muted); font-size: 12.5px; margin-top: 1px; }
+  .keys { display: grid; grid-template-columns: max-content 1fr; gap: 1px 10px; margin-top: 8px; font-size: 11.5px; }
+  .keys dt { color: var(--muted); }
+  .keys dd { margin: 0; }
+
+  /* ── Logseq stand-in: a rough imitation of default Logseq styling ─────── */
+  .qs-frame {
+    --ls-primary-text-color: #2f2f33;
+    --ls-primary-background-color: #ffffff;
+    --ls-secondary-background-color: #f6f6f7;
+    --ls-link-text-color: #3b6ab0;
+    --ls-tag-text-color: #3b6ab0;
+    --ls-block-bullet-color: #9a9aa3;
+    --ls-guideline-color: #e6e6ea;
+    --ls-border-color: #dcdce2;
+    background: var(--ls-primary-background-color);
+    color: var(--ls-primary-text-color);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    display: grid; grid-template-columns: 116px 1fr; grid-template-rows: auto 1fr;
+    min-height: 470px;
+  }
+  .qs-frame[data-theme="dark"] {
+    --ls-primary-text-color: #d9d9de;
+    --ls-primary-background-color: #1c1c20;
+    --ls-secondary-background-color: #232328;
+    --ls-link-text-color: #8ab0ec;
+    --ls-tag-text-color: #8ab0ec;
+    --ls-block-bullet-color: #6e6e78;
+    --ls-guideline-color: #303036;
+    --ls-border-color: #36363d;
+  }
+  .qs-frame .cp__header {
+    grid-column: 1 / -1; display: flex; gap: 14px; align-items: center;
+    padding: 7px 12px; font-size: 14px; border-bottom: 1px solid var(--ls-border-color);
+  }
+  .qs-frame .cp__header .sp { flex: 1; }
+  .qs-frame #left-sidebar {
+    background: var(--ls-secondary-background-color); padding: 10px 10px; font-size: 12.5px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .qs-frame #left-sidebar .sb-h { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; margin-top: 10px; opacity: .7; }
+  .qs-frame .main { padding: 14px 16px 18px 10px; min-width: 0; }
+  .qs-frame .ls-page-title { font-size: 24px; font-weight: 700; margin: 0 0 6px 22px; line-height: 1.3; }
+  .qs-frame .page-add-tags { font-size: 12px; margin: 0 0 6px 22px; color: var(--ls-block-bullet-color); }
+  .qs-frame .ls-page-properties { margin: 0 0 10px 22px; padding: 6px 10px; border-radius: 6px; background: var(--ls-secondary-background-color); font-size: 13.5px; }
+  .qs-frame .property-pair { display: flex; gap: 10px; }
+  .qs-frame .property-key { min-width: 74px; color: var(--ls-block-bullet-color); }
+  .qs-frame .ls-properties-area { font-size: 13.5px; padding: 2px 0 2px 2px; }
+  .qs-frame .block-main-container { display: flex; align-items: flex-start; }
+  .qs-frame .block-control-wrap { display: flex; align-items: center; height: 24px; flex-shrink: 0; }
+  .qs-frame .positioned-properties.block-left { width: 0; position: relative; left: -14px; top: 1px; font-size: 12px; }
+  .qs-frame .bullet-container {
+    width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 6px 0 2px;
+  }
+  .qs-frame .bullet { width: 6px; height: 6px; border-radius: 50%; background: var(--ls-block-bullet-color); }
+  .qs-frame .bullet-container.bullet-closed { background: color-mix(in srgb, var(--ls-block-bullet-color) 30%, transparent); }
+  .qs-frame .block-content-or-editor-wrap { flex: 1; min-width: 0; }
+  .qs-frame .block-title-wrap { display: inline; }
+  .qs-frame h3.block-title-wrap { font-size: 18px; font-weight: 700; margin: 4px 0 0; line-height: 1.4; display: block; }
+  .qs-frame .block-children { margin-left: 13px; padding-left: 9px; border-left: 1px solid var(--ls-guideline-color); }
+  .qs-frame a.page-ref, .qs-frame a.tag { color: var(--ls-link-text-color); text-decoration: none; cursor: pointer; }
+  .qs-frame .block-ref { border-bottom: 1px solid var(--ls-link-text-color); cursor: pointer; }
+  .qs-frame a.external-link { color: var(--ls-link-text-color); text-decoration: underline; }
+  .qs-frame code { background: var(--ls-secondary-background-color); border: 1px solid var(--ls-border-color); border-radius: 4px; padding: 0 .3em; font-size: .86em; font-family: ui-monospace, Menlo, monospace; }
+  .qs-frame mark { background: #fbe78c; color: #222; }
+  .qs-frame[data-theme="dark"] mark { background: #6a5a1a; color: inherit; }
+  .qs-frame .ui__checkbox {
+    display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px;
+    border: 1.5px solid; border-radius: 3px; color: var(--ls-block-bullet-color); position: relative;
+  }
+  .qs-frame .ui__checkbox.checked { background: currentColor; }
+  .qs-frame .ui__checkbox.checked::after {
+    content: ""; position: absolute; left: 3.5px; top: 0.5px; width: 4px; height: 8px;
+    border: solid var(--ls-primary-background-color); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg);
+  }
+  .qs-frame .done-text { text-decoration: line-through; }
+  .qs-frame .block-tags { display: inline-flex; gap: 4px; margin-left: 6px; font-size: 13px; }
+  .qs-frame .references-blocks-wrap { margin: 18px 0 0 22px; padding-top: 10px; border-top: 1px solid var(--ls-border-color); }
+  .qs-frame .ref-h { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .qs-frame .breadcrumb { font-size: 12.5px; color: var(--ls-block-bullet-color); }
+  .qs-frame .ls-block { margin: 1px 0; }
+</style>
+<script src="dist/preview.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>Quiet & Still: design systems</h1>
+  <p class="sub">The same mock Logseq page under each system, plus a baseline. Hover any faded area to see it come back.
+    The element switches apply to every frame, so you can see what each element contributes.</p>
+
+  <div class="controls">
+    <div>
+      <div class="ctl-label">Theme</div>
+      <div class="seg" id="theme">
+        <button data-v="light">Light</button><button data-v="dark">Dark</button>
+      </div>
+    </div>
+    <div>
+      <div class="ctl-label">Elements</div>
+      <div class="groups" id="groups"></div>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<style id="qs-generated"></style>
+
+<script>
+  const MOCK = `
+    <div class="cp__header"><span>☰</span><span>‹ ›</span><span class="sp"></span><span>⌕</span><span>＋</span><span>⋯</span></div>
+    <div id="left-sidebar">
+      <div class="sidebar-content-group"><div class="bd"><div class="sidebar-navigations"><div>Journals</div><div>Flashcards</div><div>Graph view</div><div>All pages</div></div></div></div>
+      <div class="sidebar-content-group"><div class="hd sb-h">Favorites</div><div class="bd"><div>Lantern</div><div>Reading</div></div></div>
+    </div>
+    <div class="main">
+      <div class="ls-page-title">Lantern</div>
+      <div class="page-add-tags">+ Add tag</div>
+      <div class="ls-page-properties">
+        <div class="property-pair"><span class="property-key">tags</span><span class="property-value"><a class="tag">#Project</a></span></div>
+        <div class="property-pair"><span class="property-key">owner</span><span class="property-value"><a class="page-ref">Mara Ito</a></span></div>
+      </div>
+
+      <div class="ls-block"><div class="block-main-container">
+        <div class="block-control-wrap"><span class="bullet-container"><span class="bullet"></span></span></div>
+        <div class="block-content-or-editor-wrap"><div class="block-content">
+          <div class="block-title-wrap">Kickoff with <a class="page-ref">Mara Ito</a> about the <a class="page-ref">Lantern</a> budget <a class="tag">#meeting</a></div>
+          <div class="ls-properties-area">
+            <div class="property-pair"><span class="property-key">date</span><span class="property-value"><span class="ls-datetime">Nov 3, 2026</span></span></div>
+          </div>
+        </div></div>
+      </div></div>
+
+      <div class="ls-block"><div class="block-main-container">
+        <div class="positioned-properties block-left">◐</div>
+        <div class="block-control-wrap"><span class="bullet-container"><span class="bullet"></span></span></div>
+        <div class="block-content-or-editor-wrap"><div class="block-content">
+          <div class="block-title-wrap"><span class="ui__checkbox"></span>Draft the outline for <a class="page-ref">Q1 Plan</a>; see <span class="block-ref">budget capped at 40k until review</span></div>
+        </div></div>
+      </div></div>
+
+      <div class="ls-block"><div class="block-main-container">
+        <div class="block-control-wrap"><span class="bullet-container"><span class="bullet"></span></span></div>
+        <div class="block-content-or-editor-wrap"><div class="block-content">
+          <div class="block-title-wrap"><span class="ui__checkbox checked"></span><span class="done-text">Book the venue for <span class="timestamp">Nov 14</span></span></div>
+        </div></div>
+      </div></div>
+
+      <div class="ls-block"><div class="block-main-container">
+        <div class="block-control-wrap"><span class="bullet-container"><span class="bullet"></span></span></div>
+        <div class="block-content-or-editor-wrap"><div class="block-content">
+          <h3 class="block-title-wrap as-heading">Notes</h3>
+        </div></div>
+      </div>
+      <div class="block-children-container"><div class="block-children">
+        <div class="ls-block"><div class="block-main-container">
+          <div class="block-control-wrap"><span class="bullet-container"><span class="bullet"></span></span></div>
+          <div class="block-content-or-editor-wrap"><div class="block-content">
+            <div class="block-title-wrap">Run <code>npm run build</code> before <mark>the demo</mark>; notes at <a class="external-link">example.com/lantern</a></div>
+          </div></div>
+        </div></div>
+        <div class="ls-block"><div class="block-main-container">
+          <div class="block-control-wrap"><span class="bullet-container bullet-closed"><span class="bullet"></span></span></div>
+          <div class="block-content-or-editor-wrap"><div class="block-content">
+            <div class="block-title-wrap">Open questions on pricing</div>
+          </div></div>
+        </div></div>
+        <div class="ls-block"><div class="block-main-container">
+          <div class="block-control-wrap"><span class="bullet-container"><span class="bullet"></span></span></div>
+          <div class="block-content-or-editor-wrap"><div class="block-content">
+            <div class="block-title-wrap">Thinking in Systems</div><span class="block-tags"><span class="block-tag"><a class="tag">#Book</a></span></span>
+          </div></div>
+        </div></div>
+      </div></div></div>
+
+      <div class="references-blocks-wrap">
+        <div class="ref-h">2 Linked References</div>
+        <div class="breadcrumb">Journals › Nov 1, 2026</div>
+        <div class="ls-block"><div class="block-main-container">
+          <div class="block-control-wrap"><span class="bullet-container"><span class="bullet"></span></span></div>
+          <div class="block-content-or-editor-wrap"><div class="block-content">
+            <div class="block-title-wrap">Sketched the <a class="page-ref">Lantern</a> timeline <a class="tag">#planning</a></div>
+          </div></div>
+        </div></div>
+      </div>
+    </div>`;
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  };
+
+  const defaultTheme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  let theme = store.get("qs-theme", defaultTheme);
+  let enabled = store.get("qs-enabled", QS.ELEMENTS.filter((e) => e.on).map((e) => e.id));
+
+  // Cards: baseline first, then each system.
+  const grid = document.getElementById("grid");
+  const cards = [{ id: "baseline", name: "Baseline", idea: "Logseq stand-in with no plugin styles.", keys: {} }, ...QS.SYSTEMS];
+  for (const s of cards) {
+    const keys = Object.entries(s.keys).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+    grid.insertAdjacentHTML("beforeend", `
+      <section class="card">
+        <div class="card-head">
+          <div class="card-name">${s.name}</div>
+          <div class="card-idea">${s.idea}</div>
+          ${keys ? `<dl class="keys">${keys}</dl>` : ""}
+        </div>
+        <div class="qs-frame ${s.id === "baseline" ? "" : "qs-on"}" data-system="${s.id}">${MOCK}</div>
+      </section>`);
+  }
+
+  // Element toggles, grouped like the plugin settings.
+  const groupsEl = document.getElementById("groups");
+  for (const { name: g, elements } of QS.GROUPS) {
+    const rows = elements.map((e) => `
+      <label class="el" title="${e.level}">
+        <input type="checkbox" data-id="${e.id}" ${enabled.includes(e.id) ? "checked" : ""}>
+        ${e.label}${e.source === "live" ? ' <span class="unv">unverified</span>' : ""}
+      </label>`).join("");
+    groupsEl.insertAdjacentHTML("beforeend", `<div class="group"><div class="group-name">${g}</div>${rows}</div>`);
+  }
+  groupsEl.addEventListener("change", (ev) => {
+    enabled = [...groupsEl.querySelectorAll("input:checked")].map((i) => i.dataset.id);
+    store.set("qs-enabled", enabled);
+    render();
+  });
+
+  document.getElementById("theme").addEventListener("click", (ev) => {
+    const v = ev.target.dataset.v; if (!v) return;
+    theme = v; store.set("qs-theme", theme); render();
+  });
+
+  function render() {
+    document.documentElement.dataset.theme = theme;
+    document.querySelectorAll("#theme button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === theme));
+    document.querySelectorAll(".qs-frame").forEach((f) => (f.dataset.theme = theme));
+    const css = QS.SYSTEMS.map((s) =>
+      QS.tokens(s.id, `.qs-frame[data-system="${s.id}"]`, `.qs-frame[data-system="${s.id}"][data-theme="dark"]`)
+    ).join("\n") + "\n" + QS.elements(enabled, ".qs-frame.qs-on");
+    document.getElementById("qs-generated").textContent = css;
+  }
+  render();
+</script>
+</body>
+</html>
