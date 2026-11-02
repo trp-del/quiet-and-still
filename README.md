@@ -18,7 +18,7 @@ each type of information. The principles are in [RULES.md](RULES.md).
 | `src/preview.ts` | Exposes the same modules as `window.QS` for the preview pages |
 | `preview.html` | Every system side by side on a mock Logseq page |
 | `still.html` | The Still system on a full-app mock, with a Baseline toggle |
-| `proposals.html` | The ten cognitive proposals behind the live behaviours, each with a demo |
+| `history/` | Proposals and screenshots from along the way, named by date and time; `history/index.html` lists them |
 | `scripts/release.sh` | Builds the release zip Logseq installs from GitHub, by hand |
 | `tests/` | Consistency rules for the library, and the plugin's API wiring against a stub |
 

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiet & Still History</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* The record of how the plugin got here: proposals and captures, newest first.
+   Each entry is named YYYY-MM-DD-HHMM-<what>, the time it was made. */
+:root {
+  --bg: #ededea; --surface: #f7f7f5; --fg: #232327; --muted: #6c6b67; --line: #d9d8d3;
+  --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --body: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111113; --surface: #18181b; --fg: #e6e5e1; --muted: #8f8d87; --line: #2c2c31; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111113; --surface: #18181b; --fg: #e6e5e1; --muted: #8f8d87; --line: #2c2c31; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); margin: 0; }
+.wrap { max-width: 880px; margin: 0 auto; padding: 48px 16px 80px; display: grid; gap: 40px; }
+h1, h2 { font-family: var(--display); font-weight: 500; margin: 0; }
+h1 { font-size: clamp(34px, 5vw, 46px); line-height: 1.08; }
+h2 { font-size: 22px; }
+p { margin: 0; max-width: 64ch; }
+.lede { display: grid; gap: 12px; }
+.lede p { color: var(--muted); }
+.label { font: 11.5px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+code { font: .88em var(--mono); }
+
+ol.entries { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.entry { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px 24px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+@media (max-width: 600px) { .entry { grid-template-columns: minmax(0, 1fr); } }
+.entry time { font: 13px/1.9 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.entry .body { display: grid; gap: 6px; }
+.entry a { color: inherit; }
+.entry h2 a { text-decoration: none; }
+.entry h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.entry .body > p { color: var(--muted); }
+
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 8px; }
+.shots a { display: grid; gap: 4px; text-decoration: none; font: 11.5px/1.3 var(--mono); color: var(--muted); }
+.shots img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.shots a:hover img { border-color: var(--muted); }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="lede">
+    <div class="label">Quiet &amp; Still · history</div>
+    <h1>How the plugin got here</h1>
+    <p>Proposals and captures from along the way, newest first. Each is named for the date and time it was made, so the folder sorts the same way. These are records: the plugin may have moved on since.</p>
+  </header>
+
+  <ol class="entries">
+    <li class="entry">
+      <time datetime="2026-11-02T13:38">2026-11-02 13:38</time>
+      <div class="body">
+        <h2><a href="2026-11-02-1338-next-ten-proposals.html">The next ten proposals</a></h2>
+        <p>Ten ways to help reading and working once the chrome had faded, each with a live demo. Proposals 2–10 were built into the plugin; 1, "Orient, then recede", was set aside.</p>
+      </div>
+    </li>
+    <li class="entry">
+      <time datetime="2026-11-02T10:47">2026-11-02 10:47</time>
+      <div class="body">
+        <h2><a href="2026-11-02-1047-screenshots/">Screenshots in Logseq</a></h2>
+        <p>The plugin off and with Still on two test pages, a bug before its fix, and the left sidebar fading to quiet (10:47–11:09).</p>
+        <div class="shots">
+          <a href="2026-11-02-1047-screenshots/1-fatigue-off.jpg"><img src="2026-11-02-1047-screenshots/1-fatigue-off.jpg" alt="Fatigue page with the plugin off" loading="lazy">fatigue, off</a>
+          <a href="2026-11-02-1047-screenshots/2-fatigue-still.jpg"><img src="2026-11-02-1047-screenshots/2-fatigue-still.jpg" alt="Fatigue page with Still" loading="lazy">fatigue, Still</a>
+          <a href="2026-11-02-1047-screenshots/3-consultation-off.jpg"><img src="2026-11-02-1047-screenshots/3-consultation-off.jpg" alt="Consultation page with the plugin off" loading="lazy">consultation, off</a>
+          <a href="2026-11-02-1047-screenshots/4-consultation-still.jpg"><img src="2026-11-02-1047-screenshots/4-consultation-still.jpg" alt="Consultation page with Still" loading="lazy">consultation, Still</a>
+          <a href="2026-11-02-1047-screenshots/5-consultation-bug-before-fix.jpg"><img src="2026-11-02-1047-screenshots/5-consultation-bug-before-fix.jpg" alt="Consultation page showing a bug before its fix" loading="lazy">bug, before fix</a>
+          <a href="2026-11-02-1047-screenshots/6-fatigue-sidebar-pages-quiet.jpg"><img src="2026-11-02-1047-screenshots/6-fatigue-sidebar-pages-quiet.jpg" alt="Sidebar pages at quiet" loading="lazy">sidebar pages quiet</a>
+          <a href="2026-11-02-1047-screenshots/7-sidebar-zoom.jpg"><img src="2026-11-02-1047-screenshots/7-sidebar-zoom.jpg" alt="Sidebar close-up" loading="lazy">sidebar, close</a>
+          <a href="2026-11-02-1047-screenshots/8-fatigue-sidebar-nav-quiet.jpg"><img src="2026-11-02-1047-screenshots/8-fatigue-sidebar-nav-quiet.jpg" alt="Sidebar navigation at quiet" loading="lazy">sidebar nav quiet</a>
+          <a href="2026-11-02-1047-screenshots/9-sidebar-nav-zoom.jpg"><img src="2026-11-02-1047-screenshots/9-sidebar-nav-zoom.jpg" alt="Sidebar navigation close-up" loading="lazy">sidebar nav, close</a>
+        </div>
+      </div>
+    </li>
+  </ol>
+</main>
+</body>
+</html>
