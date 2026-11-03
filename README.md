@@ -13,6 +13,7 @@ each type of information. The principles are in [RULES.md](RULES.md).
 | `src/build.ts` | Turns a system + mode + enabled elements into CSS, with the findability floor and OS contrast/motion preferences. Used by the plugin and the previews |
 | `src/contrast.ts` | Contrast math for the floor: faded whisper must keep 1.5:1 against Logseq's default neutrals |
 | `src/live.ts` | Behaviour CSS can't do alone: the peek key, marking repeat page mentions, the key popover |
+| `src/structure/` | Structure around your writing: paired properties, relations above linked references, name matching, colon-free shorthand, repeating a block's shape, filling new pages in place, ambient properties, the sweep, children as a table. Suggestions show on one quiet line; nothing is written until the accept key (Hyper) |
 | `src/settings.ts` | Settings schema generated from the library and systems |
 | `src/main.ts` | Plugin entry: wires the builder to the Logseq API (styles, settings, theme mode, commands) |
 | `src/preview.ts` | Exposes the same modules as `window.QS` for the preview pages |

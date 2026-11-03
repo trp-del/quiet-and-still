@@ -24,7 +24,10 @@ export function watchPeek(doc: Document, key: () => string | null): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const off = () => { clearTimeout(timer); root.classList.remove("qs-peek"); };
   const down = (e: KeyboardEvent) => {
-    if (e.key !== key()) return off();
+    // Only the key on its own: Hyper (⌃⌥⇧⌘) also presses Alt, and must not peek.
+    const k = key();
+    const others = (e.ctrlKey && k !== "Control") || (e.altKey && k !== "Alt") || e.shiftKey || e.metaKey;
+    if (e.key !== k || others) return off();
     if (!e.repeat) timer = setTimeout(() => root.classList.add("qs-peek"), HOLD_MS);
   };
   const up = (e: KeyboardEvent) => { if (e.key === key()) off(); };
@@ -149,9 +152,9 @@ export const KEY_CSS = `
 #qs-key {
   position: fixed; right: 16px; bottom: 16px; z-index: 999; width: min(360px, calc(100vw - 32px));
   display: grid; gap: 1px; padding: 8px;
-  background: var(--ls-primary-background-color, var(--lx-gray-01));
-  color: var(--lx-gray-12, var(--ls-primary-text-color));
-  border: 1px solid var(--ls-border-color, var(--qs-cell-line)); border-radius: 8px;
+  background: var(--ls-primary-background-color, hsl(var(--popover, 0 0% 100%)));
+  color: var(--lx-gray-12, var(--ls-primary-text-color, hsl(var(--foreground, 0 0% 10%))));
+  border: 1px solid var(--ls-border-color, hsl(var(--border, 0 0% 90%))); border-radius: 8px;
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.12); font-size: 13px;
 }
 #qs-key .qs-key-head {
@@ -163,7 +166,7 @@ export const KEY_CSS = `
 }
 #qs-key .qs-key-row:is(:hover, :focus-visible) { background: var(--qs-select-bg); outline: none; }
 #qs-key .qs-key-row > span:last-child { color: var(--qs-prop-key); }
-#qs-key .qs-key-kind { color: var(--lx-gray-12, var(--ls-primary-text-color)); }
+#qs-key .qs-key-kind { color: var(--lx-gray-12, var(--ls-primary-text-color, hsl(var(--foreground, 0 0% 10%)))); }
 #qs-key .qs-key-sample .block-content { display: inline; }
 #qs-key .qs-key-box {
   display: inline-block; width: 11px; height: 11px; border: 1.5px solid var(--qs-todo); border-radius: 3px;

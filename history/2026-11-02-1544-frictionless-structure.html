@@ -1,0 +1,869 @@
+<title>Quiet & Still Structure</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Layout: the same reading column as the earlier proposals; each pairs its argument (left) with a demo (right).
+   Demos play in time: a timeline of named steps, a playhead, and a caption for each step. They rest on the end state.
+   Ink for content, quiet for structure, one amber for what just changed. */
+:root {
+  --bg: #ededea; --surface: #f7f7f5; --pane: #ffffff; --fg: #232327; --muted: #6c6b67; --line: #d9d8d3;
+  --accent: #c26a16;                     /* Still's --qs-state: live state only */
+  --ink: #2f2f33;                        /* the mock's Logseq text color */
+  --whisper: .12; --quiet: .4; --ease: 150ms ease;
+  --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --body: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --app: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111113; --surface: #18181b; --pane: #1c1c20; --fg: #e6e5e1; --muted: #8f8d87; --line: #2c2c31;
+  --accent: #f0a04b; --ink: #d9d9de; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111113; --surface: #18181b; --pane: #1c1c20; --fg: #e6e5e1; --muted: #8f8d87; --line: #2c2c31;
+  --accent: #f0a04b; --ink: #d9d9de; color-scheme: dark; }
+@media (prefers-reduced-motion: reduce) { :root { --ease: 0ms linear; } }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); margin: 0; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 48px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 500; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(34px, 5vw, 50px); line-height: 1.08; letter-spacing: -.01em; }
+h2 { font-size: 27px; line-height: 1.15; }
+h3 { font-size: 20px; }
+p { margin: 0; max-width: 64ch; }
+.lede { display: grid; gap: 14px; }
+.lede p { color: var(--muted); font-size: 16.5px; }
+.label { font: 11.5px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+code { font: .88em var(--mono); }
+
+/* index */
+.index { overflow-x: auto; border-top: 1px solid var(--line); }
+.index table { width: 100%; border-collapse: collapse; min-width: 680px; font-size: 14px; }
+.index th { text-align: left; font: 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 400; padding: 10px 12px 8px 0; }
+.index td { padding: 9px 12px 9px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.index td:first-child { font: 13px var(--mono); color: var(--muted); width: 36px; font-variant-numeric: tabular-nums; }
+.index a { color: inherit; text-decoration: none; font-weight: 500; }
+.index a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.index .muted { color: var(--muted); }
+.st { font: 11.5px var(--mono); color: var(--muted); white-space: nowrap; }
+.st.rev { color: var(--accent); }
+
+/* moments */
+.moment { display: grid; gap: 28px; }
+.moment > header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.moment > header p { color: var(--muted); font-size: 14px; }
+
+/* a proposal */
+.prop { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; align-items: start; scroll-margin-top: 24px; }
+@media (max-width: 880px) { .prop { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
+.argue { display: grid; gap: 12px; }
+.argue .num { font: 13px var(--mono); color: var(--muted); display: flex; gap: 10px; }
+.argue .why { font-size: 14px; color: var(--muted); }
+.argue .why b { color: var(--fg); font-weight: 600; }
+.reply { font-size: 14px; border-left: 2px solid var(--accent); padding-left: 12px; display: grid; gap: 4px; }
+.reply .you { font: 11px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; margin: 4px 0 0; }
+.meta dt { font: 11px/1.9 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.meta dd { margin: 0; }
+.cost { display: inline-block; font: 11px/1.6 var(--mono); padding: 0 7px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); }
+
+.demo { display: grid; gap: 10px; min-width: 0; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: 13px; color: var(--muted); }
+button { font: inherit; }
+.btn { font-size: 13px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); cursor: pointer; }
+.btn:hover { border-color: color-mix(in srgb, var(--fg) 30%, transparent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { font-size: 13px; padding: 4px 11px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--pane); color: var(--fg); }
+kbd { font: 12px var(--mono); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--surface); color: var(--fg); }
+
+/* ── the player: timeline, playhead, caption ─────────────────────────── */
+.player { display: grid; gap: 6px; }
+.tl { position: relative; height: 30px; border-top: 1px solid var(--line); margin-top: 4px; }
+.tl .tick { position: absolute; top: -4px; width: 1px; height: 7px; background: var(--muted); opacity: .5; }
+.tl .tick.past { background: var(--accent); opacity: 1; }
+.tl .tn { position: absolute; top: 5px; font: 10.5px var(--mono); color: var(--muted); transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+.tl .tn.past { color: var(--fg); }
+.tl .head { position: absolute; top: -2px; left: 0; width: 0; height: 3px; background: var(--accent); }
+.say { font-size: 14px; min-height: 3.2em; color: var(--fg); }
+.say .n { font: 12px var(--mono); color: var(--muted); margin-right: 8px; font-variant-numeric: tabular-nums; }
+
+/* ── Logseq stand-in, at Still's levels ─────────────────────────────── */
+.pane { background: var(--pane); color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+  font: 13.5px/1.6 var(--app); position: relative; overflow: hidden; padding: 14px 18px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 560px) { .pair { grid-template-columns: 1fr; } }
+.pair figure { margin: 0; display: grid; gap: 6px; align-content: start; }
+.pair figcaption { font-size: 12.5px; color: var(--muted); }
+.ptitle { font: 600 19px/1.3 var(--app); margin-bottom: 4px; }
+.prow { font-size: .8em; color: color-mix(in srgb, var(--ink) 62%, transparent); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.prow .k { color: color-mix(in srgb, var(--ink) 42%, transparent); min-width: 7.5em; }
+.line { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.bul { width: 5px; height: 5px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 22%, transparent); flex-shrink: 0; transform: translateY(-2px); }
+.ref { text-decoration: underline dotted; text-decoration-color: color-mix(in srgb, var(--ink) 45%, transparent); text-underline-offset: 3px; }
+.tag { font-size: .8em; color: color-mix(in srgb, var(--ink) 42%, transparent); }
+.q { opacity: var(--quiet); }
+.w { opacity: var(--whisper); }
+.kids { margin-left: 2px; padding-left: 14px; border-left: 1px solid color-mix(in srgb, var(--ink) 7%, transparent); display: grid; gap: 2px; transition: border-color var(--ease); }
+.sub { font-size: 11.5px; color: color-mix(in srgb, var(--ink) 45%, transparent); margin-top: 8px; letter-spacing: .02em; }
+.caret::after { content: ""; display: inline-block; width: 1.5px; height: 1.05em; background: var(--ink); margin-left: 1px; vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .caret::after { animation: none; } }
+.new { color: var(--accent) !important; }
+.fade { transition: opacity 400ms ease, color 900ms ease; }
+.ghost { opacity: .32; }
+.edit { background: color-mix(in srgb, var(--ink) 5%, transparent); border-radius: 4px; padding: 0 6px; margin: 0 -6px; }
+.stat { font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.stat b { color: var(--fg); font-weight: 400; }
+
+/* mode switching: each demo carries data-mode="today" | "proposed" */
+[data-mode="today"] .only-p, [data-mode="proposed"] .only-t { display: none !important; }
+
+/* 1 pairs */
+.pmark { font-size: .9em; color: color-mix(in srgb, var(--ink) 40%, transparent); }
+.confirm { font-size: 11.5px; margin-left: calc(7.5em * .8 + 8px); color: color-mix(in srgb, var(--ink) 60%, transparent); }
+.confirm u { text-underline-offset: 2px; }
+.pairdef { font: 11.5px var(--mono); color: var(--muted); }
+
+/* 3 near match */
+.pop { border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: 6px; margin: 4px 0 0 13px; font-size: 12.5px; display: grid; max-width: 300px; background: var(--pane); }
+.pop div { padding: 4px 10px; display: flex; justify-content: space-between; gap: 10px; }
+.pop .hi { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.pop .why { font-size: 11px; opacity: .5; }
+
+/* 4 shorthand: the words stay, a hairline marks them as property-backed */
+.sh { text-decoration: underline; text-decoration-style: dotted; text-decoration-color: transparent; text-underline-offset: 4px; transition: text-decoration-color 400ms ease; }
+.sh.on { text-decoration-color: color-mix(in srgb, var(--ink) 40%, transparent); }
+.prompt { border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); border-radius: 6px; padding: 8px 10px; margin: 4px 0 4px 13px; display: grid; gap: 4px; font-size: 12.5px; background: color-mix(in srgb, var(--ink) 3%, transparent); }
+.prompt .f { display: flex; gap: 8px; } .prompt .f span:first-child { min-width: 6em; opacity: .6; }
+.prompt .box { flex: 1; border-bottom: 1px solid color-mix(in srgb, var(--ink) 25%, transparent); }
+
+/* 6 create in place */
+.fields { margin: 2px 0 2px 13px; display: grid; gap: 1px; }
+.fields .prow .v { min-width: 6em; }
+
+/* 7 ambient: inherited values sit right after the text, at quiet */
+.inh { font-size: .8em; color: color-mix(in srgb, var(--ink) 55%, transparent); white-space: nowrap; }
+.kids.lit { border-left-color: color-mix(in srgb, var(--ink) 30%, transparent); }
+.qbox { border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); margin-top: 10px; padding-top: 8px; }
+
+/* 8 sweep */
+.tally { font-size: 11.5px; opacity: var(--quiet); text-align: right; font-variant-numeric: tabular-nums; }
+.sweep { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+.sweep th { text-align: left; font-weight: 400; font-size: 11px; color: color-mix(in srgb, var(--ink) 45%, transparent); padding: 2px 6px 4px 0; }
+.sweep td { border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); padding: 4px 6px 4px 0; }
+.sweep td.empty { color: color-mix(in srgb, var(--ink) 30%, transparent); }
+.sweep td.cur { box-shadow: inset 0 -1.5px 0 var(--accent); }
+
+/* 2 relations */
+.refs { display: grid; gap: 8px; margin-top: 6px; }
+.rgroup { display: grid; gap: 1px; }
+.rgroup .rh { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: color-mix(in srgb, var(--ink) 45%, transparent); }
+.crumb { font-size: 11px; color: color-mix(in srgb, var(--ink) 40%, transparent); }
+.flat { display: grid; gap: 6px; }
+.flat > div { display: grid; }
+
+/* 9 margin: text column never moves; notes flow down a margin and push each other, not the text */
+.mg { position: relative; padding-right: 150px; }
+@media (max-width: 480px) { .mg { padding-right: 112px; } }
+.mg .blk { cursor: text; border-radius: 4px; padding: 1px 6px; margin: 0 -6px 6px; }
+.mg .blk.on { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.note { position: absolute; right: 0; width: 136px; font-size: 11.5px; line-height: 1.45; color: color-mix(in srgb, var(--ink) 60%, transparent);
+  opacity: var(--quiet); transition: opacity var(--ease); padding-left: 8px; border-left: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
+@media (max-width: 480px) { .note { width: 102px; } }
+.note.on { opacity: 1; border-left-color: color-mix(in srgb, var(--ink) 35%, transparent); }
+.note.pushed { opacity: var(--whisper); }
+.note .more { color: color-mix(in srgb, var(--ink) 40%, transparent); }
+.inline-props { margin-left: 13px; margin-bottom: 4px; }
+
+/* 10 two faces */
+.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.tbl th { text-align: left; font-weight: 400; font-size: 11px; color: color-mix(in srgb, var(--ink) 45%, transparent); padding: 2px 8px 4px 0; }
+.tbl td { border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); padding: 4px 8px 4px 0; }
+.scroll { overflow-x: auto; }
+.after { font-size: .8em; color: color-mix(in srgb, var(--ink) 50%, transparent); }
+
+/* closing notes */
+.aside { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+@media (max-width: 760px) { .aside { grid-template-columns: 1fr; } }
+.aside div { display: grid; gap: 6px; align-content: start; border-top: 1px solid var(--line); padding-top: 12px; }
+.aside p { font-size: 14px; color: var(--muted); }
+.aside h3 { font-size: 18px; }
+</style>
+
+<div class="wrap">
+
+<section class="lede">
+  <span class="label">Quiet &amp; Still · proposals · 2 Nov 2026, 15:44 · revised 16:57 · built 17:51</span>
+  <h1>Write first. Let the structure settle around the writing.</h1>
+  <p>So far the plugin has been about how Logseq looks. Friction is the other half of quiet: every time you stop writing to open a property panel, visit a second page, or scroll a pile of linked references, the outline gets louder than the thought. These ten proposals move structure out of the writing path. You type, and the properties, relations and views form around the text at quiet volume.</p>
+  <p>Revised after your notes. Each demo now plays in time: press Play, or let it start when it scrolls into view, and the caption says what is happening at each step. Your note and the answer sit beside the proposals you questioned.</p>
+  <p>Built at 17:51, all but 09, and checked in the Illness Test Graph. One rule runs through them: the plugin suggests on one quiet line under the block, and writes nothing until you press the accept key. That key is <kbd>Hyper</kbd> (⌃⌥⇧⌘ together, released with no other key), because <kbd>Tab</kbd> indents in Logseq. <kbd>⌃⇧↩</kbd> is the alternative in settings.</p>
+</section>
+
+<nav class="index" aria-label="All proposals">
+  <table>
+    <thead><tr><th>#</th><th>Proposal</th><th>Moment</th><th>Removes</th><th>Effort</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><a href="#p1">Paired relations</a></td><td class="muted">Linking</td><td class="muted">Visiting the second page to link back</td><td class="muted">Medium</td><td><span class="st">Built</span></td></tr>
+      <tr><td>2</td><td><a href="#p2">Relations, not a reference pile</a></td><td class="muted">Linking</td><td class="muted">Scrolling linked references</td><td class="muted">Medium</td><td><span class="st">Built</span></td></tr>
+      <tr><td>3</td><td><a href="#p3">One name, one node</a></td><td class="muted">Linking</td><td class="muted">Duplicate pages, later merges</td><td class="muted">Small</td><td><span class="st">Built</span></td></tr>
+      <tr><td>4</td><td><a href="#p4">Shorthand that stays</a></td><td class="muted">Writing</td><td class="muted">The property panel mid-sentence</td><td class="muted">Medium</td><td><span class="st">Built</span></td></tr>
+      <tr><td>5</td><td><a href="#p5">The last block's shape</a></td><td class="muted">Writing</td><td class="muted">Re-entering the same tag and fields</td><td class="muted">Medium</td><td><span class="st">Built</span></td></tr>
+      <tr><td>6</td><td><a href="#p6">Create without leaving</a></td><td class="muted">Writing</td><td class="muted">Opening a new page to fill it</td><td class="muted">Medium</td><td><span class="st">Built</span></td></tr>
+      <tr><td>7</td><td><a href="#p7">Ambient properties</a></td><td class="muted">Shaping</td><td class="muted">Repeating a property on every child</td><td class="muted">Medium</td><td><span class="st">Built</span></td></tr>
+      <tr><td>8</td><td><a href="#p8">Fill later, in one sweep</a></td><td class="muted">Shaping</td><td class="muted">A form after every tag</td><td class="muted">Medium</td><td><span class="st">Built</span></td></tr>
+      <tr><td>9</td><td><a href="#p9">Properties in the margin</a></td><td class="muted">Shaping</td><td class="muted">Property rows breaking the prose</td><td class="muted">Large</td><td><span class="st rev">Not built</span></td></tr>
+      <tr><td>10</td><td><a href="#p10">Prose and table, one key apart</a></td><td class="muted">Shaping</td><td class="muted">Building a query to edit in bulk</td><td class="muted">Large</td><td><span class="st">Built</span></td></tr>
+    </tbody>
+  </table>
+</nav>
+
+<!-- ───────────── LINKING ───────────── -->
+<section class="moment">
+  <header><h2>Linking</h2><p>How nodes point at each other, and how you read those links later.</p></header>
+
+  <article class="prop" id="p1">
+    <div class="argue">
+      <span class="num">01</span>
+      <h3>Paired relations</h3>
+      <p>A node property is a relation, and every relation has two ends. Declare a pair once (<code>Treated by</code> ↔ <code>Treats</code>), and setting one end fills the other. Write <em>Treated by: Dr. Mei Chen</em> on Fatigue, and Dr. Mei Chen's page gets <em>Treats: Fatigue</em> in its own properties, without you going there.</p>
+      <div class="reply"><span class="you">You asked: how will it be confirmed this occurs?</span>
+        <span>Three ways, from the moment you write to months later.</span></div>
+      <dl class="meta">
+        <dt>At once</dt><dd>When you commit the value, a line under the property says <em>⇄ Added to Dr. Mei Chen as Treats</em>, with Undo. It flashes amber, then settles to quiet.</dd>
+        <dt>On the other page</dt><dd>The mirrored value carries a ⇄ mark. Pointing at it says which page and property set it.</dd>
+        <dt>Over time</dt><dd>A command, "Check pairs", finds every pair where one end is missing (say, edited while the plugin was off) and lists them with a Fix button. The plugin's tests check write, remove and undo both ways.</dd>
+        <dt>Built as</dt><dd>Pairs named in settings: <code>Treated by &lt;-&gt; Treats; Related</code>. On each change (and a five-second tick, since Logseq sends no event for page properties) the plugin reads every value of the paired properties and writes or removes the other end with <code>upsertBlockProperty</code>, so queries and tables see both. The confirmation lasts ten seconds; <kbd>Hyper</kbd> undoes both ends.</dd>
+        <dt>Effort</dt><dd><span class="cost">Medium</span></dd>
+      </dl>
+    </div>
+    <div class="demo" id="d1" data-mode="proposed">
+      <div class="controls"><div class="seg" data-for="d1"><button data-m="today" aria-pressed="false">Today</button><button data-m="proposed" aria-pressed="true">Paired</button></div></div>
+      <div class="pair">
+        <figure><figcaption>Fatigue · where you are writing</figcaption>
+          <div class="pane" style="min-height:150px">
+            <div class="ptitle">Fatigue</div>
+            <div class="prow"><span class="k">Started</span>Oct 21st, 2026</div>
+            <div class="prow"><span class="k">Treated by</span><span class="ref" id="d1a">Dr. Mei Chen</span></div>
+            <div class="confirm only-p fade" id="d1c">⇄ Added to Dr. Mei Chen as Treats · <u>Undo</u></div>
+            <div class="line" style="margin-top:6px"><span class="bul"></span><span>Worse in the evenings <span class="tag">#symptom</span></span></div>
+          </div>
+        </figure>
+        <figure><figcaption>Dr. Mei Chen · never opened</figcaption>
+          <div class="pane" style="min-height:150px">
+            <div class="ptitle">Dr. Mei Chen</div>
+            <div class="prow"><span class="k">Specialty</span>General practice</div>
+            <div class="prow only-p fade" id="d1b"><span class="k">Treats</span><span><span class="ref">Fatigue</span> <span class="pmark" title="Set from Fatigue · Treated by">⇄</span></span></div>
+            <div class="line" style="margin-top:6px"><span class="bul"></span><span>Clinic on Thursdays</span></div>
+            <div class="sub only-t">Nothing here says she treats Fatigue. It's one of 14 linked references.</div>
+          </div>
+        </figure>
+      </div>
+      <div class="player" data-for="1"></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p2">
+    <div class="argue">
+      <span class="num">02</span>
+      <h3>Relations, not a reference pile</h3>
+      <p>Linked references are grouped by <em>how</em> the other node points here: first by the property that holds the link, then by tag, and only then the loose mentions in prose. Each group is a line of node names you can open, not a stack of breadcrumbed blocks.</p>
+      <p class="why"><b>Why it helps.</b> A flat list of fourteen blocks answers "where does this name appear?" The question you usually have is "what is this connected to, and how?" The property already says how. The list throws that away.</p>
+      <dl class="meta">
+        <dt>Order</dt><dd>Paired properties (from 01) · other node properties · tags · journal mentions, folded, with a count.</dd>
+        <dt>Built as</dt><dd>A section above Logseq's linked references. Pages show as links; blocks fold under their tag (<em>#Consultation · 28</em>) and open to a list, each opening in the sidebar. On Dr. Mei Chen it shows Decided by, Topic and Provider.</dd>
+        <dt>Effort</dt><dd><span class="cost">Medium</span> Read-only, so nothing can go wrong in the graph.</dd>
+      </dl>
+    </div>
+    <div class="demo" id="d2" data-mode="proposed">
+      <div class="controls"><div class="seg" data-for="d2"><button data-m="today" aria-pressed="false">Today</button><button data-m="proposed" aria-pressed="true">By relation</button></div></div>
+      <div class="pane" style="min-height:252px">
+        <div class="ptitle">Dr. Mei Chen</div>
+        <div class="sub">Linked references · 14</div>
+        <div class="flat only-t">
+          <div><span class="crumb">Fatigue</span><span class="line"><span class="bul"></span><span>Treated by: <span class="ref">Dr. Mei Chen</span></span></span></div>
+          <div><span class="crumb">Oct 22nd, 2026</span><span class="line"><span class="bul"></span><span>Spoke with <span class="ref">Dr. Mei Chen</span> about fatigue</span></span></div>
+          <div><span class="crumb">Melatonin</span><span class="line"><span class="bul"></span><span>Prescribed by: <span class="ref">Dr. Mei Chen</span></span></span></div>
+          <div><span class="crumb">Oct 29th, 2026 › Appointment</span><span class="line"><span class="bul"></span><span>Follow-up with <span class="ref">Dr. Mei Chen</span></span></span></div>
+          <div class="q"><span class="crumb">Insomnia</span><span class="line"><span class="bul"></span><span>Treated by: <span class="ref">Dr. Mei Chen</span></span></span></div>
+          <div class="w">… 9 more</div>
+        </div>
+        <div class="refs only-p">
+          <div class="rgroup"><span class="rh">Treats ⇄</span><span><span class="ref">Fatigue</span> · <span class="ref">Insomnia</span></span></div>
+          <div class="rgroup"><span class="rh">Prescribed ⇄</span><span><span class="ref">Melatonin</span> · <span class="ref">Iron supplement</span></span></div>
+          <div class="rgroup"><span class="rh">Appointments <span class="tag">#appointment</span></span><span><span class="ref">Oct 22</span> · <span class="ref">Oct 29</span> · <span class="ref">Nov 4</span></span></div>
+          <div class="rgroup q"><span class="rh">Mentioned in prose</span><span>▸ 7 journal blocks</span></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="prop" id="p3">
+    <div class="argue">
+      <span class="num">03</span>
+      <h3>One name, one node</h3>
+      <p>When the name you're typing is close to a node that exists (a missing period, a different case, a known alias), the existing node comes first in the popup, and a new one is offered second, with the reason shown. If you create it anyway, a whisper under the block asks once whether to make it an alias.</p>
+      <p class="why"><b>Why it helps.</b> Duplicates are friction you pay later: split references, half the properties on each copy, and a merge you have to remember to do. Catching it at the keystroke costs nothing.</p>
+      <dl class="meta">
+        <dt>Matches</dt><dd>Punctuation and case, initials (<em>M. Chen</em>), aliases, and edit distance of one or two letters.</dd>
+        <dt>Built as</dt><dd>Logseq's autocomplete can't be reordered by a plugin, so the near match shows on the quiet line under the block. <kbd>Hyper</kbd> replaces <code>[[Dr Mei chen</code> with <code>[[Dr. Mei Chen</code>, and Logseq's own popup then finds it.</dd>
+        <dt>Effort</dt><dd><span class="cost">Small</span></dd>
+      </dl>
+    </div>
+    <div class="demo" id="d3" data-mode="proposed">
+      <div class="controls"><div class="seg" data-for="d3"><button data-m="today" aria-pressed="false">Today</button><button data-m="proposed" aria-pressed="true">Guarded</button></div></div>
+      <div class="pane" style="min-height:200px">
+        <div class="ptitle">Nov 2nd, 2026</div>
+        <div class="line"><span class="bul"></span><span class="edit">Booked follow-up with [[<span id="d3t">Dr Mei chen</span><span class="caret"></span></span></div>
+        <div class="pop only-t" id="d3pt">
+          <div class="hi"><span>+ New page "<span class="d3echo">Dr Mei chen</span>"</span></div>
+          <div><span>Dr. Helen Brooks</span></div>
+        </div>
+        <div class="pop only-p" id="d3pp">
+          <div class="hi"><span>Dr. Mei Chen</span><span class="why">same name, punctuation</span></div>
+          <div><span>+ New page "<span class="d3echo">Dr Mei chen</span>"</span></div>
+        </div>
+        <div class="stat" style="margin-top:12px"><span class="only-t">Enter makes a second Mei Chen page. Pages named Chen: <b>2</b></span><span class="only-p">Enter links the page you meant. Pages named Chen: <b>1</b></span></div>
+      </div>
+      <div class="player" data-for="3"></div>
+    </div>
+  </article>
+</section>
+
+<!-- ───────────── WRITING ───────────── -->
+<section class="moment">
+  <header><h2>Writing</h2><p>Adding structure without taking your hands or eyes off the sentence.</p></header>
+
+  <article class="prop" id="p4">
+    <div class="argue">
+      <span class="num">04</span>
+      <h3>Shorthand that stays</h3>
+      <p>Type properties inline, the way you'd say them, with no colon: <code>due Friday</code>, <code>provider Dr. Mei Chen</code>, <code>severity 3</code>. A quiet line under the block shows what it read. <kbd>Hyper</kbd> sets the properties. The words stay in the sentence exactly as you wrote them.</p>
+      <div class="reply"><span class="you">You asked: can the colon go? It looks odd</span>
+        <span>Yes. Without a colon, prose like "due to the iron" could be misread, so two things keep it safe: a phrase only counts when its value fits the property (a date, a page that exists, a number), and nothing is written until you press Hyper.</span></div>
+      <div class="reply"><span class="you">You said: stripping the shorthand takes away the content</span>
+        <span>Right. The first version moved the words out of the sentence. Now nothing is removed. The text is the source and the property follows it: change "Friday" to "Monday" in the sentence and the Due date changes with it.</span></div>
+      <dl class="meta">
+        <dt>Rules</dt><dd>Only property names you've defined, and aliases you set (<code>for = Project</code>). Dates: Friday, next Monday, tomorrow, in 2 weeks, Nov 6, 2026-11-06. Nothing inside <code>[[links]]</code>.</dd>
+        <dt>If they part</dt><dd>Change "Friday" to "Monday" and the line offers the new date; Hyper updates it. Delete the words and the property stays. The sentence is never rewritten for you.</dd>
+        <dt>Built as</dt><dd>Reads the editor as you type and resolves phrases against your properties and pages. Checked in the test graph: Provider, Date (Nov 6) and Severity set from one sentence, text untouched. The dotted mark on the words isn't built; the quiet line does that job.</dd>
+        <dt>Effort</dt><dd><span class="cost">Medium</span></dd>
+      </dl>
+    </div>
+    <div class="demo" id="d4" data-mode="proposed">
+      <div class="controls"><div class="seg" data-for="d4"><button data-m="today" aria-pressed="false">Today</button><button data-m="proposed" aria-pressed="true">Shorthand</button></div></div>
+      <div class="pane" style="min-height:168px">
+        <div class="ptitle">Nov 2nd, 2026</div>
+        <div class="only-t">
+          <div class="line"><span class="bul"></span><span>Ask Dr. Brooks about ferritin results</span></div>
+          <div class="prompt"><div class="f"><span>+ Add property</span><span class="box"></span></div><div class="f"><span>Choose</span><span>Due · Project · Person · Status …</span></div></div>
+          <div class="stat">To add two properties: Esc, click, search, pick, value, twice, then back to the text.</div>
+        </div>
+        <div class="only-p">
+          <div class="line"><span class="bul"></span><span id="d4line">Ask Dr. Brooks about ferritin results, <span class="sh on">due <span id="d4word">Monday</span></span>, <span class="sh on">for Fatigue</span></span></div>
+          <div class="prow fade" id="d4p1" style="margin-left:13px"><span class="k">Due</span><span id="d4v">Mon, Nov 9</span></div>
+          <div class="prow fade" id="d4p2" style="margin-left:13px"><span class="k">Project</span><span class="ref">Fatigue</span></div>
+        </div>
+      </div>
+      <div class="player" data-for="4"></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p5">
+    <div class="argue">
+      <span class="num">05</span>
+      <h3>The last block's shape</h3>
+      <p>When you press Enter after a block that has a tag and properties, the new block shows that shape as a ghost: the tag and the property names, no values. <kbd>Hyper</kbd> on the empty block takes the shape; typing anything else ignores it.</p>
+      <div class="reply"><span class="you">You asked: doesn't Tab indent the bullet?</span>
+        <span>It does: Logseq binds Tab to indent, so Tab can't accept anything. Every suggestion now uses one accept key, Hyper, and Tab keeps indenting.</span></div>
+      <p class="why"><b>Why it helps.</b> Logs repeat: symptoms, doses, readings, meetings. Re-entering the tag and the same property names on every line is the most common reason structured logging gets abandoned.</p>
+      <dl class="meta">
+        <dt>Takes</dt><dd>Tags and property names from the previous sibling. Values copy only for properties marked "repeat" (a medication's dose, a project).</dd>
+        <dt>Built as</dt><dd>The quiet line under the empty block names the shape; Hyper adds the tags and copies the values you list under "Values to repeat". Checked: #Consultation and Provider carried to the new block.</dd>
+        <dt>Effort</dt><dd><span class="cost">Medium</span></dd>
+      </dl>
+    </div>
+    <div class="demo" id="d5" data-mode="proposed">
+      <div class="controls"><div class="seg" data-for="d5"><button data-m="today" aria-pressed="false">Today</button><button data-m="proposed" aria-pressed="true">Ghost shape</button></div></div>
+      <div class="pane" style="min-height:200px">
+        <div class="ptitle">Symptom log</div>
+        <div class="line"><span class="bul"></span><span>Heavy legs after the stairs <span class="tag">#symptom</span></span></div>
+        <div class="prow q" style="margin-left:13px"><span class="k">Severity</span>3 · Evening</div>
+        <div class="line"><span class="bul"></span><span>Headache behind the eyes <span class="tag">#symptom</span></span></div>
+        <div class="prow q" style="margin-left:13px"><span class="k">Severity</span>2 · Afternoon</div>
+        <div class="line" id="d5row"><span class="bul"></span><span class="edit"><span id="d5txt">Dizzy when standing up</span><span id="d5c"></span> <span class="tag" id="d5tag">#symptom</span><span class="ghost only-p" id="d5ghost" hidden>#symptom · Severity · Time</span></span></div>
+        <div class="prow fade" id="d5props" style="margin-left:13px"><span class="k">Severity</span><span class="w">empty</span> · <span class="w">Time empty</span></div>
+        <div class="stat" style="margin-top:8px"><span class="only-t">Each entry: type the tag, then add Severity and Time by hand.</span></div>
+      </div>
+      <div class="player" data-for="5"></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p6">
+    <div class="argue">
+      <span class="num">06</span>
+      <h3>Create without leaving</h3>
+      <p>You link a name that doesn't exist yet and give it a tag. The new page is made with that tag's fields already on it, and one quiet line opens under the block you're writing, so you can fill the fields right there. What you type lands on the new page as you type it.</p>
+      <div class="reply"><span class="you">You said: I don't understand, show it in real time</span>
+        <span>Play the demo. The left pane is your journal; the right pane is the page being created. You never leave the left one.</span></div>
+      <dl class="meta">
+        <dt>Keys</dt><dd><kbd>Hyper</kbd> accepts the offer. <kbd>Enter</kbd> saves a field and moves to the next. <kbd>Esc</kbd> closes the line, leaves the rest for the sweep (08), and puts you back in the block.</dd>
+        <dt>Built as</dt><dd>When a block with a tag links a page created in the last few seconds, the quiet line offers to give the page that tag. Values land on the new page when you press Enter. A value that doesn't fit is refused with a reason ("No page named …").</dd>
+        <dt>Effort</dt><dd><span class="cost">Medium</span></dd>
+      </dl>
+    </div>
+    <div class="demo" id="d6" data-mode="proposed">
+      <div class="controls"><div class="seg" data-for="d6"><button data-m="today" aria-pressed="false">Today</button><button data-m="proposed" aria-pressed="true">In place</button></div></div>
+      <div class="pair">
+        <figure><figcaption>Your journal · where you stay</figcaption>
+          <div class="pane" style="min-height:178px">
+            <div class="ptitle">Nov 2nd, 2026</div>
+            <div class="line"><span class="bul"></span><span id="d6t">Referred to <span class="ref">Dr. Anya Patel</span> <span class="tag">#doctor</span></span></div>
+            <div class="fields only-p fade" id="d6f" hidden>
+              <div class="prow"><span class="k">Specialty</span><span class="v edit" id="d6sp"></span></div>
+              <div class="prow"><span class="k">Clinic</span><span class="v" id="d6cl"><span class="w">Enter to save · Esc for later</span></span></div>
+            </div>
+            <div class="line fade" id="d6next"><span class="bul"></span><span class="caret"></span></div>
+          </div>
+        </figure>
+        <figure><figcaption>Dr. Anya Patel · created for you</figcaption>
+          <div class="pane" style="min-height:178px">
+            <div id="d6none" class="q" style="font-size:12.5px" hidden>No page yet.</div>
+            <div id="d6page">
+              <div class="ptitle">Dr. Anya Patel</div>
+              <div class="prow"><span class="k">Tags</span>#doctor</div>
+              <div class="only-p">
+                <div class="prow fade"><span class="k">Specialty</span><span id="d6rsp">Sleep medicine</span></div>
+                <div class="prow"><span class="k">Clinic</span><span class="q" id="d6rcl">empty · counted for the sweep</span></div>
+              </div>
+              <div class="only-t q" style="font-size:12.5px">No Specialty or Clinic until you come here to add them.</div>
+            </div>
+          </div>
+        </figure>
+      </div>
+      <div class="player" data-for="6"></div>
+    </div>
+  </article>
+</section>
+
+<!-- ───────────── SHAPING ───────────── -->
+<section class="moment">
+  <header><h2>Shaping</h2><p>Where structure lives on the page, and when you deal with it.</p></header>
+
+  <article class="prop" id="p7">
+    <div class="argue">
+      <span class="num">07</span>
+      <h3>Ambient properties</h3>
+      <p>Set a property once on a parent block and mark it ambient. Every block under it then counts as having that value too: in queries, in tables, in the relation groups from 02. You write <code>Project: Fatigue</code> on the appointment, and the notes under it are Fatigue notes without you typing it on each.</p>
+      <div class="reply"><span class="you">You said: I can't see the far-right text</span>
+        <span>It was set at whisper and pushed to the far edge, so it was too faint to read. Now the inherited value sits right after each note's text at quiet, as <span style="white-space:nowrap">↳ Fatigue</span>, and the thread line under the parent darkens to show the range it covers.</span></div>
+      <dl class="meta">
+        <dt>Rules</dt><dd>A note's own value wins over the inherited one. Moving a note out from under the parent drops what it inherited. Page properties can be ambient for the whole page.</dd>
+        <dt>Built as</dt><dd>Name the properties in settings ("Ambient properties: Project"). Worked out from the outline, never copied, so moving blocks leaves nothing stale. Checked: "Ferritin came back at 14 ↳ Dr. Mei Chen" on the same line, at quiet, and the table (10) shows it in empty cells.</dd>
+        <dt>Effort</dt><dd><span class="cost">Medium</span> Logseq's built-in queries won't see it; the plugin's views (02, 08, 10) will.</dd>
+      </dl>
+    </div>
+    <div class="demo" id="d7" data-mode="proposed">
+      <div class="controls"><div class="seg" data-for="d7"><button data-m="today" aria-pressed="false">Today</button><button data-m="proposed" aria-pressed="true">Ambient</button></div></div>
+      <div class="pane" style="min-height:250px">
+        <div class="ptitle">Nov 4th, 2026</div>
+        <div class="line"><span class="bul"></span><span>Appointment with <span class="ref">Dr. Helen Brooks</span> <span class="tag">#appointment</span></span></div>
+        <div class="prow fade" id="d7prop" style="margin-left:13px"><span class="k">Project</span><span class="ref">Fatigue</span><span class="only-p q">ambient</span></div>
+        <div class="kids lit" id="d7kids">
+          <div class="line"><span class="bul"></span><span>Ferritin came back at 14 <span class="inh only-p fade">↳ Fatigue</span></span></div>
+          <div class="line"><span class="bul"></span><span>Start iron, recheck in 8 weeks <span class="inh only-p fade">↳ Fatigue</span></span></div>
+          <div class="line"><span class="bul"></span><span>She doubts it explains the evenings <span class="inh only-p fade">↳ Fatigue</span></span></div>
+          <div class="line" id="d7in"><span class="bul"></span><span>Sleep is a separate question <span class="inh only-p fade">↳ Fatigue</span></span></div>
+        </div>
+        <div class="line fade" id="d7out" hidden><span class="bul"></span><span>Sleep is a separate question</span></div>
+        <div class="qbox stat">Blocks in Project Fatigue: <b id="d7n">5</b> <span class="only-t">· only the appointment, unless you tag each note by hand</span></div>
+      </div>
+      <div class="player" data-for="7"></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p8">
+    <div class="argue">
+      <span class="num">08</span>
+      <h3>Fill later, in one sweep</h3>
+      <p>A tag never stops you to ask for its properties. Missing values collect as a quiet count at the top of the page. When you choose, open the sweep: every block on the page with empty fields, as one table, where <kbd>Enter</kbd> fills a cell and moves down the column.</p>
+      <div class="reply"><span class="you">You said: show it in time</span>
+        <span>Play the demo: three doses logged without a single interruption, the count rising, then one sweep that fills all three.</span></div>
+      <dl class="meta">
+        <dt>Counts</dt><dd>Only properties the tag marks as wanted. Optional ones never show up as missing.</dd>
+        <dt>Built as</dt><dd>A quiet count at the bottom right ("5 fields to fill · sweep") and the command "Sweep this page". Click either for the table; Enter saves and moves down the column. Every property a tag defines counts; there's no "optional" marker yet.</dd>
+        <dt>Effort</dt><dd><span class="cost">Medium</span></dd>
+      </dl>
+    </div>
+    <div class="demo" id="d8" data-mode="proposed">
+      <div class="controls"><div class="seg" data-for="d8"><button data-m="today" aria-pressed="false">Today</button><button data-m="proposed" aria-pressed="true">Sweep</button></div></div>
+      <div class="pane" style="min-height:250px">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px"><div class="ptitle">Medications</div><span class="tally only-p" id="d8tally">All filled</span></div>
+        <div class="only-t">
+          <div class="line"><span class="bul"></span><span>Started iron <span class="tag">#dose</span></span></div>
+          <div class="prompt"><div class="f"><span>Amount</span><span class="box"></span></div><div class="f"><span>Time</span><span class="box"></span></div></div>
+          <div class="line q"><span class="bul"></span><span>Melatonin before bed <span class="tag">#dose</span></span></div>
+          <div class="stat" style="margin-top:6px">A form opens after every tagged block.</div>
+        </div>
+        <div class="only-p">
+          <div class="d8b"><div class="line"><span class="bul"></span><span>Started iron <span class="tag">#dose</span></span></div><div class="prow q d8pr" style="margin-left:13px"><span class="k">Amount</span>65 mg · Morning</div></div>
+          <div class="d8b"><div class="line"><span class="bul"></span><span>Melatonin before bed <span class="tag">#dose</span></span></div><div class="prow q d8pr" style="margin-left:13px"><span class="k">Amount</span>1 mg · Night</div></div>
+          <div class="d8b"><div class="line"><span class="bul"></span><span>Vitamin D with breakfast <span class="tag">#dose</span></span></div><div class="prow q d8pr" style="margin-left:13px"><span class="k">Amount</span>1000 IU · Morning</div></div>
+          <div class="scroll" id="d8sweep" hidden><table class="sweep">
+            <thead><tr><th>Block</th><th>Amount</th><th>Time</th></tr></thead>
+            <tbody>
+              <tr><td>Started iron</td><td class="empty" data-v="65 mg">—</td><td>Morning</td></tr>
+              <tr><td>Melatonin before bed</td><td class="empty" data-v="1 mg">—</td><td>Night</td></tr>
+              <tr><td>Vitamin D with breakfast</td><td class="empty" data-v="1000 IU">—</td><td>Morning</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="player" data-for="8"></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p9">
+    <div class="argue">
+      <span class="num">09</span>
+      <h3>Properties in the margin</h3>
+      <p>Block properties move out of the text column into a quiet right margin, beside the block they belong to. The prose reads as continuous paragraphs, and the bullets keep their normal spacing whatever the properties are.</p>
+      <div class="reply"><span class="you">You asked: how will it handle many? Large gaps between bullets</span>
+        <span>The margin has its own flow, so properties never add space between bullets. An unfocused block shows its first property and a count (<em>+5</em>). The focused block shows all of them, running down the margin past its neighbours; their notes step down and fade to whisper, then return when you move on. Past eight properties the note ends with "open as table" (10).</span></div>
+      <dl class="meta">
+        <dt>Falls back</dt><dd>Below about 900 px the margin folds back under the block, collapsed to the first property and a count.</dd>
+        <dt>Ships as</dt><dd>The block's properties area is taken out of the text flow and placed in the margin by a small layout pass that stacks notes without overlap. It's a fixed layout, not a hover effect, so RULES.md's paint-only hover rule still holds.</dd>
+        <dt>Effort</dt><dd><span class="cost">Large</span> Depends on Logseq's DOM; needs testing across block types.</dd>
+      </dl>
+    </div>
+    <div class="demo" id="d9" data-mode="proposed">
+      <div class="controls"><div class="seg" data-for="d9"><button data-m="today" aria-pressed="false">Today</button><button data-m="proposed" aria-pressed="true">Margin</button></div><span>Click a block to focus it.</span></div>
+      <div class="pane only-t">
+        <div class="ptitle">Fatigue</div>
+        <div class="line"><span class="bul"></span><span>Ferritin came back at 14, low end of normal.</span></div>
+        <div class="inline-props" id="d9inline"></div>
+        <div class="line"><span class="bul"></span><span>Evenings are worst; mornings are fine after coffee.</span></div>
+        <div class="prow inline-props"><span class="k">Source</span>Self-report</div>
+        <div class="line"><span class="bul"></span><span>Brooks thinks iron explains some of it, not all.</span></div>
+        <div class="prow inline-props"><span class="k">Person</span><span class="ref">Dr. Helen Brooks</span></div>
+        <div class="prow inline-props"><span class="k">Confidence</span>Opinion</div>
+        <div class="line"><span class="bul"></span><span>Sleep study referral is still pending.</span></div>
+        <div class="prow inline-props"><span class="k">Status</span>Waiting</div>
+        <div class="stat" style="margin-top:6px">Six property rows sit between the first two bullets.</div>
+      </div>
+      <div class="pane only-p">
+        <div class="ptitle">Fatigue</div>
+        <div class="mg" id="d9mg"></div>
+        <div class="stat" style="margin-top:4px">Space between bullets: unchanged, however many properties.</div>
+      </div>
+      <div class="player" data-for="9"></div>
+    </div>
+  </article>
+
+  <article class="prop" id="p10">
+    <div class="argue">
+      <span class="num">10</span>
+      <h3>Prose and table, one key apart</h3>
+      <p>Any block's children can flip between the outline you write in and a table of the same blocks, with their properties as columns. One shortcut flips back. You write in prose, then turn it into a table to compare, sort or fill, without building a query.</p>
+      <p class="why"><b>Why it helps.</b> Structure is easiest to edit in a grid and easiest to write in sentences. Today you pick one per page, or build a query view that lives somewhere else. These are the same blocks, so they should be one keystroke apart.</p>
+      <dl class="meta">
+        <dt>Columns</dt><dd>The union of the children's properties, ambient ones (07) included, in the order the tag defines.</dd>
+        <dt>Built as</dt><dd>⌘⇧T opens a table of the block's children over the block, with their properties, tag fields and inherited values as columns; Esc or ⌘⇧T flips back. Logseq's own table view isn't reachable from a plugin for a block's children, so it's a panel rather than a view.</dd>
+        <dt>Effort</dt><dd><span class="cost">Large</span> Relies on DB view APIs that are still settling.</dd>
+      </dl>
+    </div>
+    <div class="demo" id="d10" data-mode="today">
+      <div class="controls"><div class="seg" data-for="d10"><button data-m="today" aria-pressed="true">Prose</button><button data-m="proposed" aria-pressed="false">Table</button></div><span>or press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>T</kbd></span></div>
+      <div class="pane" style="min-height:190px">
+        <div class="line"><span class="bul"></span><span>Readings this week <span class="tag">#log</span></span></div>
+        <div class="kids only-t">
+          <div class="line"><span class="bul"></span><span>Slept 6h, woke twice <span class="after">Mon · energy 2</span></span></div>
+          <div class="line"><span class="bul"></span><span>Slept 7.5h, walked 30 min <span class="after">Tue · energy 4</span></span></div>
+          <div class="line"><span class="bul"></span><span>Slept 5h, late screen time <span class="after">Wed · energy 1</span></span></div>
+          <div class="line"><span class="bul"></span><span>Slept 7h, iron started <span class="after">Thu · energy 3</span></span></div>
+        </div>
+        <div class="scroll only-p"><table class="tbl">
+          <thead><tr><th>Block</th><th>Day</th><th>Sleep</th><th>Energy</th></tr></thead>
+          <tbody>
+            <tr><td>Slept 6h, woke twice</td><td>Mon</td><td>6h</td><td>2</td></tr>
+            <tr><td>Slept 7.5h, walked 30 min</td><td>Tue</td><td>7.5h</td><td>4</td></tr>
+            <tr><td>Slept 5h, late screen time</td><td>Wed</td><td>5h</td><td>1</td></tr>
+            <tr><td>Slept 7h, iron started</td><td>Thu</td><td>7h</td><td>3</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<section class="moment">
+  <header><h2>What this changes about the plugin</h2><p>Read before choosing what to build.</p></header>
+  <div class="aside">
+    <div><h3>It starts writing to the graph</h3><p>Everything so far only restyles. Proposals 01, 04, 05, 06 and 08 write properties. Each needs undo that works in one step, and its own setting, off until it's trusted.</p></div>
+    <div><h3>Start where it's read-only</h3><p>02 and 03, both agreed, never change data and remove the most daily friction. 01 then makes 02 richer, since each pair shows up as its own group.</p></div>
+    <div><h3>The rules still hold</h3><p>Everything new appears at quiet or whisper, nothing opens a modal, and the only amber is a value that just changed. 09 is the one that touches layout, so it's a fixed choice, never a hover effect.</p></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const setMode = (id, m) => {
+    const d = document.getElementById(id);
+    d.dataset.mode = m;
+    $$(`.seg[data-for="${id}"] button`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === m)));
+  };
+  $$(".seg").forEach((s) => s.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (b) setMode(s.dataset.for, b.dataset.m);
+  }));
+
+  // ── player: steps run at fixed times; a run can be cut short by a newer one.
+  // Fast mode applies every step at once, which gives each demo its resting end state.
+  const runners = {};
+  function player(n, { reset, steps, end }) {
+    const host = $(`.player[data-for="${n}"]`);
+    const total = end;
+    host.innerHTML = `<div class="controls"><button class="btn">▶ Play</button><span class="stat"></span></div>
+      <div class="tl">${steps.map((s, i) => `<i class="tick" style="left:${(s.at / total) * 100}%"></i><span class="tn" style="left:${Math.max(3, (s.at / total) * 100)}%">${i + 1}</span>`).join("")}<i class="head"></i></div>
+      <p class="say" aria-live="polite"></p>`;
+    const btn = $("button", host), head = $(".head", host), say = $(".say", host), clock = $(".stat", host);
+    const ticks = $$(".tick", host), nums = $$(".tn", host);
+    let run = 0;
+    const mark = (i) => { ticks.forEach((t, j) => t.classList.toggle("past", j <= i)); nums.forEach((t, j) => t.classList.toggle("past", j <= i)); };
+    const caption = (i) => { say.innerHTML = `<span class="n">${i + 1}/${steps.length}</span>${steps[i].say}`; };
+    async function play(fast = false) {
+      const me = ++run;
+      const live = () => me === run;
+      const wait = (ms) => (fast ? Promise.resolve() : new Promise((r) => setTimeout(r, ms)));
+      const ctx = {
+        fast, live, wait,
+        type: async (el, text, ms = 50, onChar) => {
+          if (fast) { el.textContent = text; onChar && onChar(text); return; }
+          el.textContent = "";
+          for (const ch of text) { if (!live()) return; el.textContent += ch; onChar && onChar(el.textContent); await wait(ms); }
+        },
+        flash: (el) => { el.classList.add("new"); fast ? el.classList.remove("new") : setTimeout(() => el.classList.remove("new"), 1100); },
+      };
+      reset(ctx);
+      head.style.transition = "none"; head.style.width = fast ? "100%" : "0";
+      if (!fast) requestAnimationFrame(() => requestAnimationFrame(() => { head.style.transition = `width ${total}ms linear`; head.style.width = "100%"; }));
+      const t0 = performance.now();
+      btn.textContent = fast ? "▶ Play" : "↺ Replay";
+      for (let i = 0; i < steps.length; i++) {
+        if (!fast) { const due = steps[i].at - (performance.now() - t0); if (due > 0) await wait(due); }
+        if (!live()) return;
+        mark(i); caption(i);
+        clock.textContent = fast ? "" : `${((performance.now() - t0) / 1000).toFixed(1)} s`;
+        await steps[i].run(ctx);
+      }
+      if (!fast && live()) clock.textContent = "";
+    }
+    btn.addEventListener("click", () => play(false));
+    runners[n] = play;
+    play(true);
+  }
+
+  // 01 · paired relations, and how you know it happened
+  player(1, {
+    end: 6200,
+    reset: () => { setMode("d1", "proposed"); $("#d1a").textContent = ""; $("#d1a").classList.add("caret"); $("#d1c").hidden = true; $("#d1b").hidden = true; $("#d1c").classList.remove("q"); },
+    steps: [
+      { at: 0, say: "On Fatigue, you set <b>Treated by</b> and pick Dr. Mei Chen.", run: async (c) => { await c.type($("#d1a"), "Dr. Mei Chen", 60); $("#d1a").classList.remove("caret"); } },
+      { at: 1700, say: "The moment you commit, a line under the property confirms the other end was written. Undo reverses both.", run: (c) => { $("#d1c").hidden = false; c.flash($("#d1c")); } },
+      { at: 3000, say: "Dr. Mei Chen's page now has <b>Treats: Fatigue</b>. The ⇄ mark says it came from a pair; point at it to see from where.", run: (c) => { $("#d1b").hidden = false; c.flash($("#d1b")); } },
+      { at: 4800, say: "The confirmation settles to quiet. Later, \"Check pairs\" finds any pair with a missing end.", run: () => { $("#d1c").classList.add("q"); } },
+    ],
+  });
+
+  // 03 · near-duplicate names
+  player(3, {
+    end: 3600,
+    reset: () => { $("#d3t").textContent = ""; $$("#d3 .pop").forEach((p) => (p.style.visibility = "hidden")); },
+    steps: [
+      { at: 0, say: "You start typing the doctor's name, without the period, lower-case c.", run: (c) => c.type($("#d3t"), "Dr Mei chen", 90, (t) => $$(".d3echo").forEach((e) => (e.textContent = t))) },
+      { at: 1300, say: "The existing page comes first, with the reason it matched. Enter links it; a new page is still one arrow away.", run: () => $$("#d3 .pop").forEach((p) => (p.style.visibility = "")) },
+    ],
+  });
+
+  // 04 · shorthand that stays in the sentence
+  const sentence = "Ask Dr. Brooks about ferritin results, due Friday, for Fatigue";
+  player(4, {
+    end: 8200,
+    reset: () => {
+      setMode("d4", "proposed");
+      const l = $("#d4line"); l.textContent = ""; l.classList.add("caret");
+      $("#d4p1").hidden = $("#d4p2").hidden = true;
+    },
+    steps: [
+      { at: 0, say: "You write the sentence, with the properties said in it.", run: (c) => c.type($("#d4line"), sentence, 38) },
+      { at: 3000, say: "You press <kbd>Hyper</kbd>. Every word stays; the properties fill from the two phrases.", run: (c) => {
+        const l = $("#d4line"); l.classList.remove("caret");
+        l.innerHTML = `Ask Dr. Brooks about ferritin results, <span class="sh">due <span id="d4word">Friday</span></span>, <span class="sh">for Fatigue</span>`;
+        requestAnimationFrame(() => $$("#d4line .sh").forEach((s) => s.classList.add("on")));
+        if (c.fast) $$("#d4line .sh").forEach((s) => s.classList.add("on"));
+        $("#d4v").textContent = "Fri, Nov 6";
+        $("#d4p1").hidden = $("#d4p2").hidden = false; c.flash($("#d4p1")); c.flash($("#d4p2"));
+      } },
+      { at: 5000, say: "Later you change the words: Friday becomes Monday.", run: (c) => { const w = $("#d4word"); w.classList.add("caret"); return c.type(w, "Monday", 120); } },
+      { at: 6600, say: "The line offers the new date, and <kbd>Hyper</kbd> updates it. Nothing in the sentence was moved or rewritten.", run: (c) => { $("#d4word").classList.remove("caret"); $("#d4v").textContent = "Mon, Nov 9"; c.flash($("#d4p1")); } },
+    ],
+  });
+
+  // 05 · ghost of the previous block's shape
+  player(5, {
+    end: 5200,
+    reset: () => { setMode("d5", "proposed"); $("#d5row").hidden = true; $("#d5txt").textContent = ""; $("#d5tag").hidden = true; $("#d5ghost").hidden = true; $("#d5props").hidden = true; $("#d5c").className = "caret"; },
+    steps: [
+      { at: 0, say: "Enter after a #symptom block. The new block shows that block's shape, faintly.", run: () => { $("#d5row").hidden = false; $("#d5ghost").hidden = false; } },
+      { at: 1600, say: "<kbd>Hyper</kbd> takes it: the tag, and the Severity and Time fields, empty.", run: (c) => { $("#d5ghost").hidden = true; $("#d5tag").hidden = false; $("#d5props").hidden = false; c.flash($("#d5tag")); c.flash($("#d5props")); } },
+      { at: 2800, say: "You write the symptom. The empty fields wait at whisper, for now or for the sweep.", run: async (c) => { await c.type($("#d5txt"), "Dizzy when standing up", 55); $("#d5c").className = ""; } },
+    ],
+  });
+
+  // 06 · create a page without leaving the journal
+  player(6, {
+    end: 9200,
+    reset: () => {
+      setMode("d6", "proposed");
+      $("#d6t").textContent = ""; $("#d6t").classList.add("caret");
+      $("#d6f").hidden = true; $("#d6next").hidden = true;
+      $("#d6page").hidden = true; $("#d6none").hidden = false;
+      $("#d6sp").textContent = ""; $("#d6rsp").textContent = "";
+      $("#d6cl").innerHTML = `<span class="w">Enter to save · Esc for later</span>`; $("#d6rcl").textContent = "empty";
+    },
+    steps: [
+      { at: 0, say: "In your journal, you link a name that has no page yet, and tag it #doctor.", run: (c) => c.type($("#d6t"), "Referred to [[Dr. Anya Patel]] #doctor", 45) },
+      { at: 2300, say: "The page is created. You press <kbd>Hyper</kbd>: it becomes a #doctor, and one quiet line opens under your block for its fields.", run: (c) => {
+        const t = $("#d6t"); t.classList.remove("caret");
+        t.innerHTML = `Referred to <span class="ref">Dr. Anya Patel</span> <span class="tag">#doctor</span>`;
+        $("#d6none").hidden = true; $("#d6page").hidden = false; c.flash($("#d6page"));
+        $("#d6f").hidden = false; $("#d6sp").classList.add("caret");
+      } },
+      { at: 3900, say: "You type the specialty and press Enter. It lands on the new page.", run: (c) => c.type($("#d6sp"), "Sleep medicine", 70, (v) => { $("#d6rsp").textContent = v; $("#d6rsp").classList.add("new"); }) },
+      { at: 5600, say: "<kbd>Enter</kbd> saves it and moves to Clinic. You don't know it yet.", run: () => { $("#d6rsp").classList.remove("new"); $("#d6sp").classList.remove("caret"); $("#d6cl").innerHTML = `<span class="caret"></span>`; } },
+      { at: 7000, say: "<kbd>Esc</kbd>: the line folds away, Clinic is counted for the sweep, and you carry on writing.", run: (c) => {
+        $("#d6f").hidden = true; $("#d6rcl").textContent = "empty · counted for the sweep"; c.flash($("#d6rcl"));
+        $("#d6next").hidden = false;
+      } },
+    ],
+  });
+
+  // 07 · ambient properties
+  player(7, {
+    end: 7200,
+    reset: () => {
+      setMode("d7", "proposed");
+      $("#d7prop").hidden = true; $("#d7kids").classList.remove("lit");
+      $$("#d7 .inh").forEach((e) => (e.style.opacity = 0));
+      $("#d7in").hidden = false; $("#d7out").hidden = true; $("#d7n").textContent = "0";
+    },
+    steps: [
+      { at: 0, say: "Four notes under an appointment. None of them says which project they belong to.", run: () => {} },
+      { at: 1300, say: "You set <b>Project: Fatigue</b> once, on the appointment, and mark it ambient.", run: (c) => { $("#d7prop").hidden = false; c.flash($("#d7prop")); $("#d7n").textContent = "1"; } },
+      { at: 2600, say: "The thread line darkens over the range it covers, and each note shows ↳ Fatigue after its text. The count includes them.", run: async (c) => {
+        $("#d7kids").classList.add("lit");
+        const inh = $$("#d7 .inh");
+        for (let i = 0; i < inh.length; i++) { inh[i].style.opacity = ""; c.flash(inh[i]); $("#d7n").textContent = String(2 + i); await c.wait(260); }
+      } },
+      { at: 5000, say: "You move the last note out of the appointment. It stops inheriting, and the count drops.", run: (c) => { $("#d7in").hidden = true; $("#d7out").hidden = false; $("#d7n").textContent = "4"; c.flash($("#d7n")); } },
+    ],
+  });
+
+  // 08 · fill later, in one sweep
+  player(8, {
+    end: 9800,
+    reset: () => {
+      setMode("d8", "proposed");
+      $$("#d8 .d8b").forEach((b) => (b.hidden = true));
+      $$("#d8 .d8pr").forEach((p) => (p.hidden = true));
+      $("#d8sweep").hidden = true; $("#d8tally").textContent = "";
+      $$("#d8 td[data-v]").forEach((c) => { c.textContent = "—"; c.classList.add("empty"); c.classList.remove("cur"); });
+    },
+    steps: [
+      ...[0, 900, 1800].map((at, i) => ({ at, say: i === 0 ? "You log three doses in a row. No form opens; the count at the top rises, quietly." : i === 1 ? "Second dose. Still no interruption." : "Third. Three fields wait, and you never stopped writing.", run: (c) => { $$("#d8 .d8b")[i].hidden = false; $("#d8tally").textContent = `${i + 1} field${i ? "s" : ""} to fill · sweep`; c.flash($("#d8tally")); } })),
+      { at: 3300, say: "When you're ready, you open the sweep: one table of the blocks with gaps.", run: () => { $("#d8sweep").hidden = false; $$("#d8 td[data-v]")[0].classList.add("cur"); } },
+      ...[0, 1, 2].map((i) => ({ at: 4700 + i * 900, say: i < 2 ? "<kbd>Enter</kbd> fills the cell and moves down the column." : "The last one. The count reaches zero.", run: (c) => {
+        const cells = $$("#d8 td[data-v]");
+        cells.forEach((x) => x.classList.remove("cur"));
+        cells[i].textContent = cells[i].dataset.v; cells[i].classList.remove("empty"); cells[i].classList.add("cur"); c.flash(cells[i]);
+        $("#d8tally").textContent = i < 2 ? `${2 - i} field${i ? "" : "s"} to fill · sweep` : "All filled";
+      } })),
+      { at: 8100, say: "You close the sweep. The values sit under each block, at quiet.", run: () => { $("#d8sweep").hidden = true; $$("#d8 .d8pr").forEach((p) => (p.hidden = false)); } },
+    ],
+  });
+
+  // 09 · margin notes that push each other, never the text
+  const blocks9 = [
+    { text: "Ferritin came back at 14, low end of normal.", props: [["Source", "Lab, Nov 4"], ["Confidence", "Measured"], ["Unit", "µg/L"], ["Range", "15 to 150"], ["Ordered by", "Dr. Brooks"], ["Next", "Recheck Jan 6"]] },
+    { text: "Evenings are worst; mornings are fine after coffee.", props: [["Source", "Self-report"]] },
+    { text: "Brooks thinks iron explains some of it, not all.", props: [["Person", "Dr. Brooks"], ["Confidence", "Opinion"]] },
+    { text: "Sleep study referral is still pending.", props: [["Status", "Waiting"]] },
+  ];
+  $("#d9inline").innerHTML = blocks9[0].props.map(([k, v]) => `<div class="prow"><span class="k">${k}</span>${v}</div>`).join("");
+  const mg = $("#d9mg");
+  mg.innerHTML = blocks9.map((b, i) => `<div class="line blk" tabindex="0" data-i="${i}"><span class="bul"></span><span>${b.text}</span></div>`).join("")
+    + blocks9.map((_, i) => `<div class="note" data-i="${i}"></div>`).join("");
+  let focus9 = 0;
+  function layout9() {
+    const blks = $$(".blk", mg), notes = $$(".note", mg);
+    let floor = 0;
+    blocks9.forEach((b, i) => {
+      const on = i === focus9, n = notes[i];
+      n.innerHTML = on
+        ? b.props.map(([k, v]) => `${k} · ${v}`).join("<br>")
+        : `${b.props[0][0]} · ${b.props[0][1]}${b.props.length > 1 ? ` <span class="more">+${b.props.length - 1}</span>` : ""}`;
+      blks[i].classList.toggle("on", on);
+      const want = blks[i].offsetTop;
+      const top = Math.max(want, floor);
+      n.style.top = `${top}px`;
+      n.classList.toggle("on", on);
+      n.classList.toggle("pushed", !on && top > want + 2);
+      floor = top + n.offsetHeight + 6;
+    });
+    mg.style.minHeight = `${floor}px`;
+  }
+  const focusTo = (i) => { focus9 = i; layout9(); };
+  mg.addEventListener("click", (e) => { const b = e.target.closest(".blk"); if (b) focusTo(+b.dataset.i); });
+  mg.addEventListener("focusin", (e) => { const b = e.target.closest(".blk"); if (b) focusTo(+b.dataset.i); });
+  addEventListener("resize", layout9);
+  $$('.seg[data-for="d9"] button').forEach((b) => b.addEventListener("click", () => requestAnimationFrame(layout9)));
+  player(9, {
+    end: 7600,
+    reset: () => { setMode("d9", "proposed"); focusTo(1); },
+    steps: [
+      { at: 0, say: "Each block's properties sit in the margin beside it. Unfocused, a block shows its first property and how many more.", run: () => focusTo(1) },
+      { at: 1800, say: "You focus the ferritin note, which has six properties. They run down the margin; the notes below step down and fade.", run: () => focusTo(0) },
+      { at: 4200, say: "The bullets haven't moved. Only the margin made room.", run: () => {} },
+      { at: 5800, say: "Focus moves on, and the margin settles back beside each block.", run: () => focusTo(2) },
+      { at: 7400, say: "Back to the ferritin note, its six properties shown in full.", run: () => focusTo(0) },
+    ],
+  });
+  requestAnimationFrame(layout9);
+  if (document.fonts) document.fonts.ready.then(layout9);
+
+  // 10 · the flip shortcut
+  document.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "t") {
+      e.preventDefault();
+      setMode("d10", $("#d10").dataset.mode === "today" ? "proposed" : "today");
+    }
+  });
+
+  // Play each demo once when it first comes into view.
+  if (!still && "IntersectionObserver" in window) {
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) { io.unobserve(e.target); runners[$(".player", e.target).dataset.for]?.(false); }
+    }), { threshold: 0.6 });
+    $$(".player").forEach((p) => io.observe(p.closest(".demo")));
+  }
+})();
+</script>
