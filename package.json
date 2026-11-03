@@ -1,6 +1,6 @@
 {
   "name": "logseq-quiet-and-still",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Fades non-essential Logseq DB UI while keeping split-second visual keys for each type of information.",
   "repository": {
     "type": "git",
