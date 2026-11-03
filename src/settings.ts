@@ -45,7 +45,7 @@ export function schema(): SettingSchemaDesc[] {
       key: "peekKey", type: "enum", enumPicker: "select", default: "Alt",
       enumChoices: ["Alt", "Control", "off"],
       title: "Peek key",
-      description: "Hold this key on its own to see everything at full volume. Alt is ⌥ on a Mac.",
+      description: "Hold this key on its own to see everything at full volume until you let go. Double-tap it to keep everything at full volume; double-tap again to go back. Alt is ⌥ on a Mac.",
     },
   ];
   for (const g of GROUPS) {

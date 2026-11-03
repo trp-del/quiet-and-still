@@ -16,34 +16,61 @@ export function hostDocument(): Document | null {
 // ── Peek ───────────────────────────────────────────────────────────────────────
 // Holding the key alone adds .qs-peek to <html>; chrome.peek raises the levels.
 // A short hold threshold keeps ⌥-letter typing and shortcuts from flashing it.
+// Two quick taps of the key alone latch peek on (.qs-peek-latched) until two more
+// taps, or the peek command; while latched, releasing a hold leaves it on.
 
 const HOLD_MS = 180;
+const DOUBLE_MS = 400;
+const LATCH = "qs-peek-latched";
 
 export function watchPeek(doc: Document, key: () => string | null): () => void {
   const root = doc.documentElement;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const off = () => { clearTimeout(timer); root.classList.remove("qs-peek"); };
+  let pressed = 0;   // when the key went down alone; 0 once anything else happens
+  let lastTap = 0;
+  const off = () => {
+    clearTimeout(timer);
+    if (!root.classList.contains(LATCH)) root.classList.remove("qs-peek");
+  };
   const down = (e: KeyboardEvent) => {
     // Only the key on its own: Hyper (⌃⌥⇧⌘) also presses Alt, and must not peek.
     const k = key();
     const others = (e.ctrlKey && k !== "Control") || (e.altKey && k !== "Alt") || e.shiftKey || e.metaKey;
-    if (e.key !== k || others) return off();
-    if (!e.repeat) timer = setTimeout(() => root.classList.add("qs-peek"), HOLD_MS);
+    if (e.key !== k || others) { pressed = 0; lastTap = 0; return off(); }
+    if (e.repeat) return;
+    pressed = Date.now();
+    timer = setTimeout(() => root.classList.add("qs-peek"), HOLD_MS);
   };
-  const up = (e: KeyboardEvent) => { if (e.key === key()) off(); };
+  const up = (e: KeyboardEvent) => {
+    if (e.key !== key()) return;
+    const tap = pressed > 0 && Date.now() - pressed < HOLD_MS;
+    pressed = 0;
+    if (tap && Date.now() - lastTap < DOUBLE_MS) { lastTap = 0; togglePeek(doc); return; }
+    lastTap = tap ? Date.now() : 0;
+    off();
+  };
+  const blur = () => { pressed = 0; lastTap = 0; off(); };
   const win = doc.defaultView!;
   doc.addEventListener("keydown", down, true);
   doc.addEventListener("keyup", up, true);
-  win.addEventListener("blur", off);
+  win.addEventListener("blur", blur);
   return () => {
+    root.classList.remove(LATCH);
     off();
     doc.removeEventListener("keydown", down, true);
     doc.removeEventListener("keyup", up, true);
-    win.removeEventListener("blur", off);
+    win.removeEventListener("blur", blur);
   };
 }
 
-export const togglePeek = (doc: Document) => doc.documentElement.classList.toggle("qs-peek");
+/** Latches peek on, or turns it off. Used by the double tap and the command. */
+export function togglePeek(doc: Document) {
+  const root = doc.documentElement;
+  const on = !root.classList.contains(LATCH);
+  root.classList.toggle(LATCH, on);
+  root.classList.toggle("qs-peek", on);
+  return on;
+}
 
 // ── Repeat mentions ────────────────────────────────────────────────────────────
 // Within each scope (the main page, each right-sidebar item) the first link to a

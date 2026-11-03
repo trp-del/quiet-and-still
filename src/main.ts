@@ -91,18 +91,32 @@ function registerCommands() {
   }
 }
 
+// Takes our listeners and elements out of Logseq's page.
+function stopAll() {
+  stopPeek?.(); stopPeek = undefined;
+  stopRepeats?.(); stopRepeats = undefined;
+  structure?.stop(); structure = undefined;
+}
+
+// Logseq's plugin reload (and "Check update") doesn't call beforeunload, so the
+// previous copy's listeners would stay on its page. Each start stops the last one
+// through a handle left on Logseq's window.
+const HANDLE = "__quietAndStillStop";
+function takeOver() {
+  const host = hostDocument()?.defaultView as (Window & { [HANDLE]?: () => void }) | null | undefined;
+  if (!host) return;
+  try { host[HANDLE]?.(); } catch { /* the previous copy's frame is gone */ }
+  host[HANDLE] = stopAll;
+}
+
 async function main() {
+  takeOver();
   logseq.useSettingsSchema(schema());
   mode = (await logseq.App.getUserConfigs()).preferredThemeMode === "dark" ? "dark" : "light";
   apply();
 
   logseq.onSettingsChanged(apply);
-  // On reload or uninstall, take our listeners and elements out of Logseq's page.
-  logseq.beforeunload?.(async () => {
-    stopPeek?.(); stopPeek = undefined;
-    stopRepeats?.(); stopRepeats = undefined;
-    structure?.stop(); structure = undefined;
-  });
+  logseq.beforeunload?.(async () => stopAll());
   logseq.App.onThemeModeChanged(({ mode: m }) => {
     mode = m;
     apply();

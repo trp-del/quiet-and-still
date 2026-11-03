@@ -72,7 +72,8 @@ elements in the plugin's settings. The command palette has "Quiet & Still: turn 
 "next design system", "use <system>", "show the key" and "peek on / off".
 
 Hold the peek key (⌥ by default, set in the plugin's settings) on its own to see everything
-at full volume until you let go. "Show the key" lists the current system's visual keys;
+at full volume until you let go. Double-tap it to keep everything at full volume, and
+double-tap again to go back; the "peek on / off" command does the same. "Show the key" lists the current system's visual keys;
 point at a row to fade every block that doesn't contain that type.
 
 ## Adding an element
