@@ -14,7 +14,6 @@ export default defineSystem({
   },
   tokens: {
     "--qs-ref-line": n(30),
-    "--qs-tag": n(55),
     "--qs-bref-bg": n(5),
     "--qs-bref-line": "transparent",
     "--qs-bref-radius": "2px",

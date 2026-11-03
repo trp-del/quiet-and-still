@@ -51,4 +51,6 @@ without losing the ability to tell kinds of information apart at a glance.
 - Any element can pair with any system, and each can be switched on or off by itself.
 - `src/live.ts` holds the few behaviours CSS can't do alone. They only toggle classes
   (`qs-peek`, `qs-repeat`) that elements style, so the look still lives in tokens.
-- `npm test` enforces this: elements may not hard-code colors or read unknown tokens.
+- `npm test` enforces this: elements may not hard-code colors or read unknown tokens,
+  and hover, focus and editing rules may only change paint (opacity, color, background,
+  filter), never size or spacing.

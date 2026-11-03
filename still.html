@@ -115,6 +115,9 @@
 
   /* tags row & views */
   .qs-frame .block-tags { display: inline-flex; gap: 4px; margin-left: 6px; font-size: 13px; }
+  /* Logseq's own tag row: "#" is a separate link, and both links sit at 70% */
+  .qs-frame .block-tag { display: inline-flex; }
+  .qs-frame .block-tag :is(a.tag, a.hash-symbol) { opacity: .7; }
   .qs-frame .ls-table { margin: 4px 0 6px; border: 1px solid var(--ls-border-color); border-radius: 8px; overflow: hidden; font-size: 14px; }
   .qs-frame .ls-view-head { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-bottom: 1px solid var(--ls-border-color); color: var(--ls-block-bullet-color); font-size: 13px; }
   .qs-frame .ls-view-head .t { color: var(--ls-primary-text-color); font-weight: 600; margin-right: auto; }
@@ -178,13 +181,14 @@
   };
   const i = (n) => `<svg class="i" viewBox="0 0 24 24">${P[n]}</svg>`;
 
+  const blockTag = (t) => `<span class="block-tag"><a class="hash-symbol">#</a><a class="tag"><span>${t}</span></a></span>`;
   // Block helper: opts = { left, closed, cls, props, children, tags }
   const block = (title, o = {}) => `
     <div class="ls-block ${o.cls || ""}"><div class="block-main-container">
       ${o.left ? `<div class="positioned-properties block-left">${o.left}</div>` : ""}
       <div class="block-control-wrap"><span class="bullet-container ${o.closed ? "bullet-closed" : ""}"><span class="bullet"></span></span></div>
       <div class="block-content-or-editor-wrap"><div class="block-content">
-        ${title}${o.tags ? `<span class="block-tags">${o.tags.map((t) => `<span class="block-tag"><a class="tag">#${t}</a></span>`).join("")}</span>` : ""}
+        ${title}${o.tags ? `<span class="block-tags">${o.tags.map((t) => blockTag(t)).join("")}</span>` : ""}
         ${o.props ? `<div class="ls-properties-area">${o.props.map(([k, v]) => `<div class="property-pair"><span class="property-key">${k}</span><span class="property-value">${v}</span></div>`).join("")}</div>` : ""}
       </div></div>
     </div>${o.children ? `<div class="block-children-container"><div class="block-children">${o.children.join("")}</div></div>` : ""}</div>`;
@@ -222,7 +226,7 @@
 
     <div id="main-content-container">
       <div class="page-head"><span class="ls-page-icon">${i("lantern")}</span><span class="ls-page-title">Lantern</span></div>
-      <div class="page-tags"><span class="block-tags" style="margin:0">${tag("Project")}</span><span class="page-add-tags">+ Add tag</span></div>
+      <div class="page-tags"><span class="block-tags" style="margin:0">${blockTag("Project")}</span><span class="page-add-tags">+ Add tag</span></div>
       <div class="ls-page-properties">
         <div class="property-pair"><span class="property-key">status</span><span class="property-value"><span class="property-value-inner"><span class="select-item"><span class="ls-icon-color-wrap" style="color:#2f9e5e;display:inline-flex">${i("dot")}</span>Active</span></span></span></div>
         <div class="property-pair"><span class="property-key">owner</span><span class="property-value">${ref("Mara Ito")}</span></div>

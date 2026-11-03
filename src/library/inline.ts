@@ -27,15 +27,20 @@ export default defineGroup("Inline", [
   {
     id: "inline.tag", label: "Tags (#)",
     level: "quiet", source: "src", on: true,
+    // Tags keep the text's own size and variant: the editor shows the same "#tag"
+    // characters at full size, so any shrink rewraps the line on click. A pill's
+    // padding is cancelled by an equal negative margin so it adds no width either.
+    // In the tag row Logseq draws "#" as its own a.hash-symbol and fades both links
+    // to 70%, which would multiply the tone down; the tone alone sets the volume.
     css: `
+      .block-tag :is(a.tag, a.hash-symbol) { color: var(--qs-tag); opacity: 1; }
       a.tag {
         color: var(--qs-tag);
         background: var(--qs-tag-bg);
         box-shadow: inset 0 0 0 1px var(--qs-tag-border);
         border-radius: var(--qs-tag-radius);
         padding: 0 var(--qs-tag-pad);
-        font-size: var(--qs-tag-size);
-        font-variant: var(--qs-tag-variant);
+        margin: 0 calc(-1 * var(--qs-tag-pad));
         text-decoration: none;
       }`,
   },

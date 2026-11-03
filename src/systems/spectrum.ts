@@ -14,7 +14,7 @@ export default defineSystem({
   tokens: {
     "--qs-ref": "#3f64a0",
     "--qs-ref-deco": "none",
-    "--qs-tag": "#2f7f6f",
+    "--qs-tag": "#2a7666",
     "--qs-bref": "#6e54a3",
     "--qs-bref-line": "color-mix(in srgb, #6e54a3 40%, transparent)",
     "--qs-date": "#8c6d1f",
@@ -23,7 +23,7 @@ export default defineSystem({
   },
   dark: {
     "--qs-ref": "#93b3e6",
-    "--qs-tag": "#7dc6b3",
+    "--qs-tag": "#88d1be",
     "--qs-bref": "#bba5e6",
     "--qs-bref-line": "color-mix(in srgb, #bba5e6 40%, transparent)",
     "--qs-date": "#d8b866",

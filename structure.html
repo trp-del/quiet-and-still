@@ -1,0 +1,660 @@
+<meta charset="utf-8">
+<title>Quiet & Still Steady Structure</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Layout: one reading column, same language as proposals.html. Each change pairs its
+   argument with two live panes on one shared timeline; the traces under each pane are
+   measured from the panes themselves, not drawn by hand. */
+:root {
+  --bg: #ededea; --surface: #f7f7f5; --pane: #ffffff; --fg: #232327; --muted: #6c6b67; --line: #d9d8d3;
+  --accent: #c26a16;                     /* Still's --qs-state: used here for movement, the thing to notice */
+  --ink: #2f2f33;
+  --whisper: .12; --quiet: .4; --ease: 150ms ease;
+  --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --body: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --app: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111113; --surface: #18181b; --pane: #1c1c20; --fg: #e6e5e1; --muted: #8f8d87; --line: #2c2c31;
+  --accent: #f0a04b; --ink: #d9d9de; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111113; --surface: #18181b; --pane: #1c1c20; --fg: #e6e5e1; --muted: #8f8d87; --line: #2c2c31;
+  --accent: #f0a04b; --ink: #d9d9de; color-scheme: dark; }
+@media (prefers-reduced-motion: reduce) { :root { --ease: 0ms linear; } }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); margin: 0; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 48px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 500; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(34px, 5vw, 50px); line-height: 1.08; letter-spacing: -.01em; }
+h2 { font-size: 27px; line-height: 1.15; }
+h3 { font-size: 20px; }
+p { margin: 0; max-width: 64ch; }
+.lede { display: grid; gap: 14px; }
+.lede p { color: var(--muted); font-size: 16.5px; }
+.label { font: 11.5px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+code { font: .88em var(--mono); }
+
+/* legend */
+.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13px; color: var(--muted); align-items: center; }
+.legend i { display: inline-block; vertical-align: -1px; margin-right: 6px; }
+.legend .lb { width: 6px; height: 13px; background: var(--accent); border-radius: 1px; }
+.legend .ld { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); vertical-align: 1px; }
+
+/* index */
+.index { overflow-x: auto; border-top: 1px solid var(--line); }
+.index table { width: 100%; border-collapse: collapse; min-width: 680px; font-size: 14px; }
+.index th { text-align: left; font: 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 400; padding: 10px 12px 8px 0; }
+.index td { padding: 9px 12px 9px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.index td:first-child { font: 13px var(--mono); color: var(--muted); width: 36px; }
+.index td.n { font: 13px var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.index td.n .hi { color: var(--accent); }
+.index a { color: inherit; text-decoration: none; font-weight: 500; }
+.index a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.index .muted { color: var(--muted); }
+
+.moment { display: grid; gap: 40px; }
+.moment > header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.moment > header p { color: var(--muted); font-size: 14px; }
+
+.prop { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 32px; align-items: start; scroll-margin-top: 24px; }
+@media (max-width: 900px) { .prop { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
+.argue { display: grid; gap: 12px; }
+.argue .num { font: 13px var(--mono); color: var(--muted); }
+.argue .why { font-size: 14px; color: var(--muted); }
+.argue .why b { color: var(--fg); font-weight: 600; }
+.meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; margin: 4px 0 0; }
+.meta dt { font: 11px/1.9 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.meta dd { margin: 0; }
+
+/* ── demo frame: two panes, one timeline ─────────────────────────────── */
+.demo { display: grid; gap: 12px; min-width: 0; }
+.panes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.panes[data-layout="stack"] { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 620px) { .panes { grid-template-columns: minmax(0, 1fr); } }
+.panes figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
+.panes figcaption { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--muted); }
+.panes figcaption b { font-weight: 600; color: var(--fg); }
+.ro { font: 12px var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ro .hi { color: var(--accent); }
+
+.trace { position: relative; height: 34px; border-bottom: 1px solid var(--line); }
+.trace .bar { position: absolute; bottom: 0; width: 6px; margin-left: -3px; background: var(--accent); border-radius: 1px 1px 0 0; opacity: .35; transition: opacity var(--ease); }
+.trace .bar.past { opacity: 1; }
+.trace .chg { position: absolute; bottom: -4px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: var(--muted); opacity: .35; transition: opacity var(--ease); }
+.trace .chg.past { opacity: 1; }
+.trace .zero { position: absolute; left: 0; bottom: 4px; font: 10.5px var(--mono); color: var(--muted); opacity: .7; }
+.ph { position: absolute; top: 0; bottom: 0; width: 1.5px; background: var(--fg); opacity: .5; pointer-events: none; }
+
+.tl { display: grid; gap: 4px; }
+.tlrow { display: flex; align-items: center; gap: 12px; }
+.play { font: 13px var(--body); padding: 4px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); cursor: pointer; min-width: 74px; }
+.play:hover { border-color: color-mix(in srgb, var(--fg) 30%, transparent); }
+.tl input[type=range] { flex: 1; accent-color: var(--fg); min-width: 0; }
+.tl .clock { font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; }
+.steps { position: relative; height: 34px; margin-left: 86px; margin-right: 64px; }
+.steps button { position: absolute; top: 0; transform: translateX(-2px); font: 11.5px/1.25 var(--body); color: var(--muted); background: none; border: 0; border-left: 1px solid var(--line); padding: 2px 0 2px 5px; cursor: pointer; text-align: left; max-width: 120px; }
+.steps button.now { color: var(--fg); border-left-color: var(--fg); }
+@media (max-width: 620px) { .steps { margin-left: 0; margin-right: 0; height: auto; display: flex; flex-wrap: wrap; gap: 4px 10px; } .steps button { position: static; transform: none; } }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cap { font-size: 12.5px; color: var(--muted); max-width: 72ch; }
+.cap b { color: var(--fg); font-weight: 600; }
+
+/* ── Logseq stand-in ─────────────────────────────────────────────────── */
+.pane { background: var(--pane); color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+  font: 13.5px/1.6 var(--app); position: relative; overflow: hidden; }
+.main { padding: 14px 18px; display: grid; align-content: start; gap: 2px; min-width: 0; }
+.ptitle { font: 600 20px/1.3 var(--app); margin-bottom: 4px; }
+.line { display: flex; gap: 8px; align-items: baseline; padding: 1px 4px; border-radius: 4px; }
+.bul { width: 5px; height: 5px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 20%, transparent); flex-shrink: 0; transform: translateY(-2px); }
+.t { min-width: 0; }
+.tag { color: color-mix(in srgb, var(--ink) 40%, transparent); }
+.editing { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.raw { display: none; }
+.editing .raw { display: inline; }
+.editing .rendered { display: none; }
+.editing .raw::after { content: ""; display: inline-block; width: 1.5px; height: 1.05em; background: var(--ink); margin-left: 1px; vertical-align: -2px; }
+.cursor { position: absolute; left: 0; top: 0; width: 13px; height: 17px; pointer-events: none; z-index: 3; opacity: 0; transition: transform 260ms ease, opacity var(--ease); }
+.cursor path { fill: var(--fg); stroke: var(--pane); stroke-width: 1.2; }
+.measuring, .measuring * { transition: none !important; }
+
+/* 1 · inline styling keeps text size */
+[data-mode="today"] .x1 .tag { font-size: .78em; }
+
+/* 2 · hover changes paint only */
+.props { display: grid; gap: 0; font-size: .78em; opacity: var(--quiet); transition: opacity var(--ease); margin-bottom: 4px; }
+.props.hot { opacity: 1; }
+.prow { display: flex; gap: 12px; }
+.prow .k { color: color-mix(in srgb, var(--ink) 45%, transparent); }
+.prow .v { color: color-mix(in srgb, var(--ink) 75%, transparent); }
+[data-mode="today"] .x2 .props.hot { font-size: 1em; }
+.testout { font: 12px/1.6 var(--mono); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; overflow-x: auto; white-space: pre; color: var(--muted); }
+.testout .bad { color: var(--accent); }
+
+/* 3 · spacing instead of lines */
+.outline { padding: 14px 16px; display: grid; }
+.blk > .row { display: flex; gap: 8px; align-items: baseline; padding: 1px 6px; border-radius: 4px; }
+.kids { margin-left: 8px; padding-left: 12px; border-left: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); }
+.x3 .top + .top { margin-top: 2px; }
+[data-mode="proposed"] .x3 .top + .top { margin-top: 14px; }
+[data-mode="proposed"] .x3 .kids { border-left-color: color-mix(in srgb, var(--ink) 4%, transparent); }
+
+/* 4 · property keys in one column */
+.x4 .props { opacity: var(--quiet); font-size: .82em; gap: 1px; }
+.x4 .props.hot { opacity: 1; }
+[data-mode="proposed"] .x4 .props { display: grid; grid-template-columns: 9.5em 1fr; column-gap: 12px; }
+[data-mode="proposed"] .x4 .prow { display: contents; }
+.x4 .v.editing { box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--ink) 35%, transparent); border-radius: 3px; background: transparent; }
+
+/* 5 · a reading width */
+.frame { display: grid; grid-template-columns: minmax(0, 1fr) 0; }
+.frame.x5[data-step="1"] { grid-template-columns: minmax(0, 1fr) 34%; }
+.rside { overflow: hidden; background: color-mix(in srgb, var(--ink) 3%, transparent); border-left: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); font-size: 12.5px; }
+.rside .in { padding: 12px; display: grid; gap: 4px; min-width: 160px; }
+.rside .h { font-weight: 600; font-size: 13px; }
+.x5 .t { max-width: none; }
+[data-mode="proposed"] .x5 .measure { max-width: 44ch; }
+
+/* 6 · overlay, don't insert */
+.titlewrap { position: relative; }
+.pacts { display: flex; gap: 14px; font-size: 12px; opacity: var(--whisper); transition: opacity var(--ease); padding: 2px 0 6px; }
+.titlewrap.hot .pacts { opacity: 1; }
+[data-mode="proposed"] .x6 .pacts { position: absolute; right: 0; top: 6px; padding: 0; }
+
+/* 7 · tabular figures */
+.x7 .props { opacity: 1; font-size: .86em; gap: 3px; }
+.x7 .prow { gap: 5px; white-space: nowrap; }
+.x7 .num { color: var(--ink); }
+[data-mode="proposed"] .x7 .num { font-variant-numeric: tabular-nums; }
+
+/* 8 · one hover zone per block */
+.bz { padding: 3px 6px 5px; border-radius: 4px; }
+.bz + .bz { margin-top: 6px; }
+.bz .meta8 { display: flex; gap: 12px; font-size: .78em; }
+.bz .tags8, .bz .props8 { opacity: var(--quiet); transition: opacity var(--ease); }
+.bz .props8 { color: color-mix(in srgb, var(--ink) 65%, transparent); }
+[data-mode="today"] .x8 :is(.tags8, .props8).hot { opacity: 1; }
+[data-mode="proposed"] .x8 .bz.hot :is(.tags8, .props8) { opacity: 1; }
+</style>
+
+<main class="wrap">
+
+<section class="lede">
+  <div class="label">Quiet &amp; Still · structure · November 2026</div>
+  <h1>Steady structure: change the layout once, then let only paint move.</h1>
+  <p>Each change below plays out over a few seconds of real use: reading, clicking into a block, hovering, opening the sidebar. Both panes run the same script. The bars under each pane are measured from the pane itself every time the script reaches a step: how far the furthest piece of text moved, in pixels.</p>
+  <div class="legend">
+    <span><i class="lb"></i>Text moved (bar height, capped at 34 px)</span>
+    <span><i class="ld"></i>Something changed volume</span>
+    <span>Drag the timeline or press Play. Your fonts and window width are part of the measurement.</span>
+  </div>
+</section>
+
+<section class="index" aria-label="Index">
+  <table>
+    <thead><tr><th>#</th><th>Change</th><th>Moved today</th><th>Moved proposed</th><th>Volume changes</th><th>Ships as</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><a href="#p1">Inline styling keeps text size</a></td><td class="n" data-sum="p1:0:px"></td><td class="n" data-sum="p1:1:px"></td><td class="n" data-sum="p1:chg"></td><td class="muted">Token values in four systems</td></tr>
+      <tr><td>2</td><td><a href="#p2">Hover changes paint only</a></td><td class="n" data-sum="p2:0:px"></td><td class="n" data-sum="p2:1:px"></td><td class="n" data-sum="p2:chg"></td><td class="muted">A test in consistency.test.mjs</td></tr>
+      <tr><td>3</td><td><a href="#p3">Spacing instead of lines</a></td><td class="n" data-sum="p3:0:px"></td><td class="n" data-sum="p3:1:px"></td><td class="n" data-sum="p3:chg"></td><td class="muted">Two spacing tokens</td></tr>
+      <tr><td>4</td><td><a href="#p4">Property keys in one column</a></td><td class="n" data-sum="p4:0:px"></td><td class="n" data-sum="p4:1:px"></td><td class="n" data-sum="p4:chg"></td><td class="muted">CSS grid on the property area</td></tr>
+      <tr><td>5</td><td><a href="#p5">A reading width</a></td><td class="n" data-sum="p5:0:px"></td><td class="n" data-sum="p5:1:px"></td><td class="n" data-sum="p5:chg"></td><td class="muted">One token, left-aligned max-width</td></tr>
+      <tr><td>6</td><td><a href="#p6">Overlay, don't insert</a></td><td class="n" data-sum="p6:0:px"></td><td class="n" data-sum="p6:1:px"></td><td class="n" data-sum="p6:chg"></td><td class="muted">Absolute position for page actions</td></tr>
+      <tr><td>7</td><td><a href="#p7">Tabular figures for numbers</a></td><td class="n" data-sum="p7:0:px"></td><td class="n" data-sum="p7:1:px"></td><td class="n" data-sum="p7:chg"></td><td class="muted">One declaration on property values</td></tr>
+      <tr><td>8</td><td><a href="#p8">One hover zone per block</a></td><td class="n" data-sum="p8:0:px"></td><td class="n" data-sum="p8:1:px"></td><td class="n" data-sum="p8:chg"></td><td class="muted">Selectors keyed to the block row</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Fix first ─────────────────────────────────────────────────────── -->
+<section class="moment">
+  <header><h2>Fix first</h2><p>Two jumps the plugin causes today, and a guard so new ones can't creep in.</p></header>
+
+  <article class="prop" id="p1">
+    <div class="argue">
+      <div class="num">01</div>
+      <h3>Inline styling keeps text size</h3>
+      <p>Tags are drawn at 0.78em in Still and Margin. When you click into the block, Logseq swaps in the raw text at full size, the line rewraps, and every block under it shifts. Proposed: tags keep full size and are told apart by their grey alone.</p>
+      <p class="why"><b>Why it helps.</b> Clicking into a block is the most common thing you do. If the text under the pointer moves at that moment, you have to find your place again.</p>
+      <dl class="meta">
+        <dt>Rules</dt><dd>5 One type, one channel · 10 Calm motion</dd>
+        <dt>Ships as</dt><dd><code>--qs-tag-size: 1em</code> in Still and Margin, no <code>--qs-tag-pad</code> in Shapes, no small caps in Paper, and no heavier <code>--qs-ref-weight</code> in Mist and Lowlight</dd>
+      </dl>
+    </div>
+    <div class="demo" data-demo="p1" data-labels="Today|Proposed" data-dur="3200"
+         data-steps='[{"t":0,"label":"Reading"},{"t":1000,"label":"Click into the block","edit":".b1"},{"t":2300,"label":"Click away"}]'>
+      <template>
+        <div class="main x1">
+          <div class="line" data-m><span class="bul"></span><span class="t">Consultations this month</span></div>
+          <div class="line b1" data-m><span class="bul"></span><span class="t"><span class="rendered">Saw Dr. Mei Chen about the tiredness again. She wants bloods rechecked <span class="tag">#fatigue</span> <span class="tag">#sleep</span> <span class="tag">#bloods</span> <span class="tag">#vitamin-d</span> <span class="tag">#iron</span> <span class="tag">#followup</span> <span class="tag">#gp</span> <span class="tag">#sleep-study</span> <span class="tag">#diary</span> <span class="tag">#winter</span></span><span class="raw">Saw Dr. Mei Chen about the tiredness again. She wants bloods rechecked #fatigue #sleep #bloods #vitamin-d #iron #followup #gp #sleep-study #diary #winter</span></span></div>
+          <div class="line" data-m><span class="bul"></span><span class="t">She took bloods</span></div>
+          <div class="line" data-m><span class="bul"></span><span class="t">Said it is probably the winter</span></div>
+          <div class="line" data-m><span class="bul"></span><span class="t">Ask about vitamin D next time</span></div>
+        </div>
+      </template>
+      <p class="cap">Look at the three lines under the edited block. In the left pane they jump on click and jump back on leave. Page references are a separate case: Logseq shows their <code>[[brackets]]</code> while you edit, which moves text in both panes, and the plugin can't change that.</p>
+    </div>
+  </article>
+
+  <article class="prop" id="p2">
+    <div class="argue">
+      <div class="num">02</div>
+      <h3>Hover changes paint only</h3>
+      <p>A test that fails if any <code>:hover</code>, <code>:focus-within</code> or editing rule sets something other than opacity, color, background, border color or filter. Rule 10 then holds by itself for every future element.</p>
+      <p class="why"><b>Why it helps.</b> The tempting next idea is always "make metadata readable on hover" by growing it. The left pane is that idea. The test catches it before it ships.</p>
+      <dl class="meta">
+        <dt>Rules</dt><dd>2 Fade, never remove · 10 Calm motion</dd>
+        <dt>Ships as</dt><dd>A check in <code>tests/consistency.test.mjs</code> that parses each element's state rules</dd>
+      </dl>
+    </div>
+    <div class="demo" data-demo="p2" data-labels="Hover that resizes|Paint-only hover" data-dur="3000"
+         data-steps='[{"t":0,"label":"Reading"},{"t":900,"label":"Pointer on properties","hover":".props"},{"t":2100,"label":"Pointer leaves"}]'>
+      <template>
+        <div class="main x2">
+          <div class="ptitle" data-m>Fatigue</div>
+          <div class="props" data-m>
+            <div class="prow"><span class="k">Started</span><span class="v">Oct 21st, 2026</span></div>
+            <div class="prow"><span class="k">Diagnosed by</span><span class="v">Dr. Mei Chen</span></div>
+            <div class="prow"><span class="k">Status</span><span class="v">Ongoing</span></div>
+          </div>
+          <div class="line" data-m><span class="bul"></span><span class="t">Spoke with Dr. Mei Chen about fatigue</span></div>
+          <div class="line" data-m><span class="bul"></span><span class="t">Worse in the evenings</span></div>
+          <div class="line" data-m><span class="bul"></span><span class="t">Sleep study booked for Nov 18th</span></div>
+        </div>
+      </template>
+      <div class="testout"><span class="bad">✗ meta.properties  :hover sets font-size, which moves layout</span>
+  allowed in state rules: opacity, color, background-color, border-color, filter
+✓ meta.block-tags   :hover sets opacity
+✓ structure.focus   editing sets opacity</div>
+    </div>
+  </article>
+</section>
+
+<!-- ── Static structure ──────────────────────────────────────────────── -->
+<section class="moment">
+  <header><h2>Static structure</h2><p>Set once when the page renders. The traces stay flat; the difference is how the page reads at rest.</p></header>
+
+  <article class="prop" id="p3">
+    <div class="argue">
+      <div class="num">03</div>
+      <h3>Spacing instead of lines</h3>
+      <p>Top-level blocks sit further apart than their children. The grouping comes from proximity, so thread lines can drop further toward nothing.</p>
+      <p class="why"><b>Why it helps.</b> Space is the quietest container there is (rule 9). It doesn't change when you edit, so it costs nothing over time.</p>
+      <dl class="meta">
+        <dt>Rules</dt><dd>3 Three levels · 9 Shape over chrome</dd>
+        <dt>Ships as</dt><dd><code>--qs-gap-top</code> and <code>--qs-gap-sibling</code>, read by a new <code>structure.rhythm</code> element</dd>
+      </dl>
+    </div>
+    <div class="demo" data-demo="p3" data-labels="Today|Proposed" data-dur="3000"
+         data-steps='[{"t":0,"label":"Reading"},{"t":900,"label":"Edit a child","edit":".c2 > .row"},{"t":2100,"label":"Click away"}]'>
+      <template>
+        <div class="outline x3">
+          <div class="blk top" data-m><div class="row"><span class="bul"></span><span>Consultations this month</span></div>
+            <div class="kids">
+              <div class="blk" data-m><div class="row"><span class="bul"></span><span>Saw Dr. Helen Brooks about being tired</span></div></div>
+              <div class="blk c2" data-m><div class="row"><span class="bul"></span><span>She took bloods</span></div></div>
+              <div class="blk" data-m><div class="row"><span class="bul"></span><span>Referred for a sleep study</span></div></div>
+            </div>
+          </div>
+          <div class="blk top" data-m><div class="row"><span class="bul"></span><span>Symptoms</span></div>
+            <div class="kids">
+              <div class="blk" data-m><div class="row"><span class="bul"></span><span>Worse in the evenings</span></div></div>
+              <div class="blk" data-m><div class="row"><span class="bul"></span><span>Waking around 4 am</span></div></div>
+            </div>
+          </div>
+          <div class="blk top" data-m><div class="row"><span class="bul"></span><span>Questions for next time</span></div></div>
+        </div>
+      </template>
+      <p class="cap">Nothing moves in either pane. On the right, the three groups can be read before any line is noticed.</p>
+    </div>
+  </article>
+
+  <article class="prop" id="p4">
+    <div class="argue">
+      <div class="num">04</div>
+      <h3>Property keys in one column</h3>
+      <p>Keys take a fixed column and values line up on one left edge. You scan down a single edge instead of a jagged one.</p>
+      <p class="why"><b>Why it helps.</b> Values are what you read. A shared edge lets the eye drop straight down them without reading the keys.</p>
+      <dl class="meta">
+        <dt>Rules</dt><dd>6 Small but reliable · 9 Shape over chrome</dd>
+        <dt>Ships as</dt><dd><code>grid-template-columns</code> on <code>.ls-properties-area</code>. Needs a check of Logseq DB's property markup first: it may already align keys.</dd>
+      </dl>
+    </div>
+    <div class="demo" data-demo="p4" data-labels="Today|Proposed" data-dur="3600"
+         data-steps='[{"t":0,"label":"Reading"},{"t":800,"label":"Pointer on properties","hover":".props"},{"t":1700,"label":"Edit a value","hover":".props","edit":".pv2"},{"t":2700,"label":"Click away"}]'>
+      <template>
+        <div class="main x4">
+          <div class="ptitle" data-m>Fatigue</div>
+          <div class="props" data-m>
+            <div class="prow"><span class="k">Started</span><span class="v" data-m>Oct 21st, 2026</span></div>
+            <div class="prow"><span class="k">Diagnosed by</span><span class="v pv2" data-m>Dr. Mei Chen</span></div>
+            <div class="prow"><span class="k">Confirmation status</span><span class="v" data-m>Awaiting bloods</span></div>
+            <div class="prow"><span class="k">Severity</span><span class="v" data-m>Moderate</span></div>
+          </div>
+          <div class="line" data-m><span class="bul"></span><span class="t">Spoke with Dr. Mei Chen about fatigue</span></div>
+        </div>
+      </template>
+      <p class="cap">Both stay still while hovering and editing. The edit box is an outline, so it adds no width.</p>
+    </div>
+  </article>
+
+  <article class="prop" id="p5">
+    <div class="argue">
+      <div class="num">05</div>
+      <h3>A reading width</h3>
+      <p>Block text stops at about 44 characters per line, aligned to the left. When the right sidebar opens and the main column narrows, text that already fits doesn't rewrap.</p>
+      <p class="why"><b>Why it helps.</b> Opening the sidebar is a moment when you want to keep your place. A measure narrower than the column absorbs the change. Centering it would move it sideways instead, so it stays left.</p>
+      <dl class="meta">
+        <dt>Rules</dt><dd>1 Content is loudest · 10 Calm motion</dd>
+        <dt>Ships as</dt><dd><code>--qs-measure</code> as a <code>max-width</code> on block content</dd>
+      </dl>
+    </div>
+    <div class="demo" data-demo="p5" data-labels="Today|Proposed" data-layout="stack" data-dur="3200"
+         data-steps='[{"t":0,"label":"Reading"},{"t":1000,"label":"Open the right sidebar"},{"t":2200,"label":"Close it"}]'>
+      <template>
+        <div class="frame x5">
+          <div class="main">
+            <div class="ptitle" data-m>Oct 24th, 2026</div>
+            <div class="line" data-m><span class="bul"></span><span class="t measure">Appointment with Dr. Tom Okonkwo. He listened properly, which is rarer than it should be, and asked how long the tiredness has lasted.</span></div>
+            <div class="line" data-m><span class="bul"></span><span class="t measure">Referred for a sleep study. The letter should come within two weeks; if it doesn't, call the hospital.</span></div>
+            <div class="line" data-m><span class="bul"></span><span class="t measure">Bring the symptom diary next time.</span></div>
+          </div>
+          <div class="rside"><div class="in"><div class="h">Dr. Tom Okonkwo</div><div>GP · Riverside Practice</div><div>Last seen Oct 24th</div></div></div>
+        </div>
+      </template>
+      <p class="cap">At narrow widths both panes rewrap; the cap only helps while the column stays wider than the measure.</p>
+    </div>
+  </article>
+
+  <article class="prop" id="p6">
+    <div class="argue">
+      <div class="num">06</div>
+      <h3>Overlay, don't insert</h3>
+      <p>Page actions (add tags, configure) float at the right of the title line instead of holding a row of their own. They still fade in on hover exactly as now.</p>
+      <p class="why"><b>Why it helps.</b> A whispered row still takes a full line, so the page starts lower than it needs to. Giving the space back once, statically, means revealing the actions can never push anything down.</p>
+      <dl class="meta">
+        <dt>Rules</dt><dd>2 Fade, never remove · 9 Shape over chrome</dd>
+        <dt>Ships as</dt><dd><code>position: absolute</code> on <code>.ls-page-title-actions</code> inside the title wrapper</dd>
+      </dl>
+    </div>
+    <div class="demo" data-demo="p6" data-labels="Today|Proposed" data-dur="3000"
+         data-steps='[{"t":0,"label":"Reading"},{"t":900,"label":"Pointer on the title","hover":".titlewrap"},{"t":2100,"label":"Pointer leaves"}]'>
+      <template>
+        <div class="main x6">
+          <div class="titlewrap" data-m><div class="ptitle">Fatigue</div><div class="pacts"><span>+ Add tags</span><span>Configure</span></div></div>
+          <div class="line" data-m><span class="bul"></span><span class="t">Spoke with Dr. Mei Chen about fatigue</span></div>
+          <div class="line" data-m><span class="bul"></span><span class="t">Worse in the evenings</span></div>
+          <div class="line" data-m><span class="bul"></span><span class="t">Sleep study booked for Nov 18th</span></div>
+        </div>
+      </template>
+      <p class="cap">Both traces are flat. Compare where the first block starts.</p>
+    </div>
+  </article>
+
+  <article class="prop" id="p7">
+    <div class="argue">
+      <div class="num">07</div>
+      <h3>Tabular figures for numbers</h3>
+      <p>Property values and table cells use equal-width digits, as dates already do. When a value changes from 48 to 11, whatever follows it stays put.</p>
+      <p class="why"><b>Why it helps.</b> A "1" is narrower than other digits in most interface fonts. In a daily log, every new entry nudges the line sideways a little.</p>
+      <dl class="meta">
+        <dt>Rules</dt><dd>6 Small but reliable · 10 Calm motion</dd>
+        <dt>Ships as</dt><dd><code>font-variant-numeric: tabular-nums</code> in <code>meta.properties</code> and <code>meta.views</code></dd>
+      </dl>
+    </div>
+    <div class="demo" data-demo="p7" data-labels="Today|Proposed" data-dur="3600"
+         data-steps='[{"t":0,"label":"Monday","text":{".n0":"14,806",".n1":"6.4",".n2":"48",".n3":"3"}},{"t":900,"label":"Tuesday","text":{".n0":"11,171",".n1":"7.1",".n2":"11",".n3":"1"}},{"t":1800,"label":"Wednesday","text":{".n0":"18,402",".n1":"5.8",".n2":"36",".n3":"4"}},{"t":2700,"label":"Thursday","text":{".n0":"11,119",".n1":"7.1",".n2":"11",".n3":"1"}}]'>
+      <template>
+        <div class="main x7">
+          <div class="ptitle" data-m>Sleep diary</div>
+          <div class="props">
+            <div class="prow"><span class="k">Steps</span><span class="num n0"></span><span class="k" data-m>· Sleep</span><span class="num n1"></span><span class="k" data-m>h · logged</span></div>
+            <div class="prow"><span class="k">Awake</span><span class="num n2"></span><span class="k" data-m>min · Wakings</span><span class="num n3"></span><span class="k" data-m>· Mood low</span></div>
+          </div>
+          <div class="line" data-m><span class="bul"></span><span class="t">Woke at 4 am again</span></div>
+        </div>
+      </template>
+      <p class="cap">The movement is a few pixels at a time. It's small, but it happens every time a value changes.</p>
+    </div>
+  </article>
+</section>
+
+<!-- ── Hover model ───────────────────────────────────────────────────── -->
+<section class="moment">
+  <header><h2>How hover reveals</h2><p>Fewer, bigger targets, so a passing pointer changes the page less often.</p></header>
+
+  <article class="prop" id="p8">
+    <div class="argue">
+      <div class="num">08</div>
+      <h3>One hover zone per block</h3>
+      <p>Today the tag row and the properties of a block each reveal on their own hover. Proposed: resting anywhere on a block's own row reveals its metadata together, and children don't count.</p>
+      <p class="why"><b>Why it helps.</b> Moving the pointer across a block now turns things on and off several times. One zone per block changes volume once on the way in and once on the way out. It pairs with proposal 2's dwell delay.</p>
+      <dl class="meta">
+        <dt>Rules</dt><dd>4 Attention restores volume · 10 Calm motion</dd>
+        <dt>Ships as</dt><dd>State selectors keyed to <code>.block-main-container:hover</code>, which covers the block's row but not its children</dd>
+      </dl>
+    </div>
+    <div class="demo" data-demo="p8" data-labels="Today|Proposed" data-dur="4600"
+         data-steps='[{"t":0,"label":"Away"},{"t":500,"label":"Text","hover":".k1 .row8"},{"t":1000,"label":"Tags","hover":".k1 .tags8"},{"t":1500,"label":"Props","hover":".k1 .props8"},{"t":2000,"label":"Next text","hover":".k2 .row8"},{"t":2500,"label":"Tags","hover":".k2 .tags8"},{"t":3000,"label":"Third","hover":".k3 .row8"},{"t":3500,"label":"Props","hover":".k3 .props8"},{"t":4000,"label":"Leave"}]'>
+      <template>
+        <div class="main x8">
+          <div class="bz k1"><div class="row8">Saw Dr. Helen Brooks about being tired</div><div class="meta8"><span class="tags8">#fatigue #gp</span><span class="props8">Date Oct 14th</span></div></div>
+          <div class="bz k2"><div class="row8">Appointment with Dr. Tom Okonkwo</div><div class="meta8"><span class="tags8">#gp #referral</span><span class="props8">Date Oct 24th</span></div></div>
+          <div class="bz k3"><div class="row8">Saw Dr. Raj Patel, prescribed something</div><div class="meta8"><span class="tags8">#prescription</span><span class="props8">Date Oct 30th</span></div></div>
+        </div>
+      </template>
+      <p class="cap">Dots mark steps where anything changed volume. Proposed reveals a little more at once, and less often.</p>
+    </div>
+  </article>
+</section>
+
+</main>
+
+<script>
+(() => {
+  const CAP = 34;                    // trace height in px; bars above this are capped
+  const CURSOR = '<svg class="cursor" viewBox="0 0 13 17" aria-hidden="true"><path d="M1 1 L1 14 L4.4 10.8 L6.8 16 L9 15 L6.7 9.9 L11.5 9.9 Z"/></svg>';
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const results = {};
+
+  document.querySelectorAll('.demo').forEach(setup);
+
+  function setup(demo) {
+    const id = demo.dataset.demo;
+    const steps = JSON.parse(demo.dataset.steps);
+    const dur = +demo.dataset.dur;
+    const labels = demo.dataset.labels.split('|');
+    const tpl = demo.querySelector('template');
+
+    // Two panes from one template, so both run identical markup.
+    const panesEl = document.createElement('div');
+    panesEl.className = 'panes';
+    if (demo.dataset.layout) panesEl.dataset.layout = demo.dataset.layout;
+    const panes = ['today', 'proposed'].map((mode, i) => {
+      const fig = document.createElement('figure');
+      fig.innerHTML = `<figcaption><b>${labels[i]}</b><span class="ro"></span></figcaption>
+        <div class="pane" data-mode="${mode}"></div><div class="trace"><span class="zero">0 px</span><div class="ph"></div></div>`;
+      const pane = fig.querySelector('.pane');
+      pane.append(tpl.content.cloneNode(true));
+      pane.insertAdjacentHTML('beforeend', CURSOR);
+      panesEl.append(fig);
+      return { pane, root: pane.firstElementChild, ro: fig.querySelector('.ro'), trace: fig.querySelector('.trace'), cursor: pane.querySelector('.cursor') };
+    });
+    tpl.replaceWith(panesEl);
+
+    // Shared timeline.
+    const tl = document.createElement('div');
+    tl.className = 'tl';
+    tl.innerHTML = `<div class="tlrow"><button class="play" type="button">Play</button>
+      <input type="range" min="0" max="${dur}" step="10" value="0" id="range-${id}" aria-label="Timeline">
+      <span class="clock">0.0 s</span></div><div class="steps"></div>`;
+    panesEl.after(tl);
+    const range = tl.querySelector('input'), clock = tl.querySelector('.clock'), playBtn = tl.querySelector('.play');
+    const stepsEl = tl.querySelector('.steps');
+    const pct = (t) => (t / dur * 100) + '%';
+    const stepBtns = steps.map((s) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = s.label; b.style.left = pct(s.t);
+      b.addEventListener('click', () => { stop(); seek(s.t + 1); });
+      stepsEl.append(b);
+      return b;
+    });
+    // Keep the step labels under the slider track: offset by the play button and clock.
+    const alignSteps = () => {
+      if (innerWidth <= 620) return;
+      const r = range.getBoundingClientRect(), row = tl.querySelector('.tlrow').getBoundingClientRect();
+      stepsEl.style.marginLeft = (r.left - row.left) + 'px';
+      stepsEl.style.marginRight = (row.right - r.right) + 'px';
+    };
+
+    let current = -1;
+
+    function apply(i) {
+      const s = steps[i];
+      panes.forEach((p) => {
+        p.root.dataset.step = i;
+        p.pane.querySelectorAll('.hot, .editing').forEach((el) => el.classList.remove('hot', 'editing'));
+        if (s.text) for (const [sel, v] of Object.entries(s.text)) p.pane.querySelectorAll(sel).forEach((el) => { el.textContent = v; });
+        let target = null;
+        if (s.hover) {
+          target = p.pane.querySelector(s.hover);
+          for (let el = target; el && el !== p.pane; el = el.parentElement) el.classList.add('hot');
+        }
+        if (s.edit) {
+          const ed = p.pane.querySelector(s.edit);
+          ed.classList.add('editing');
+          target = target || ed;
+        }
+        if (target) {
+          const pr = p.pane.getBoundingClientRect(), tr = target.getBoundingClientRect();
+          const x = Math.min(tr.left - pr.left + Math.min(tr.width * .35, 90), pr.width - 16);
+          const y = tr.top - pr.top + tr.height * .45;
+          p.cursor.style.transform = `translate(${x}px, ${y}px)`;
+          p.cursor.style.opacity = 1;
+        } else {
+          p.cursor.style.opacity = 0;
+        }
+      });
+    }
+
+    // Walk every step with transitions off and record, per pane, the largest move of any
+    // tracked element and whether any element's opacity changed. These are the bars.
+    function measure() {
+      panesEl.classList.add('measuring');
+      const snap = (p) => ({
+        rects: (() => { const o = p.pane.getBoundingClientRect();
+          return [...p.pane.querySelectorAll('[data-m]')].map((el) => { const r = el.getBoundingClientRect(); return [r.left - o.left, r.top - o.top]; }); })(),
+        ops: [...p.root.querySelectorAll('*')].map((el) => getComputedStyle(el).opacity),
+      });
+      const ev = panes.map(() => []);
+      let prev = null;
+      steps.forEach((s, i) => {
+        apply(i);
+        const now = panes.map(snap);
+        if (prev) panes.forEach((p, k) => {
+          let moved = 0;
+          now[k].rects.forEach((r, j) => {
+            const a = prev[k].rects[j];
+            moved = Math.max(moved, Math.abs(r[0] - a[0]), Math.abs(r[1] - a[1]));
+          });
+          const changed = now[k].ops.some((o, j) => o !== prev[k].ops[j]);
+          ev[k].push({ t: s.t, px: Math.round(moved), changed });
+        });
+        prev = now;
+      });
+      apply(Math.max(current, 0));
+      panesEl.offsetWidth;            // settle styles before transitions return
+      panesEl.classList.remove('measuring');
+      window.__qs = window.__qs || {}; window.__qs[id] = ev;
+      render(ev);
+    }
+
+    function render(ev) {
+      results[id] = ev;
+      panes.forEach((p, k) => {
+        p.trace.querySelectorAll('.bar, .chg').forEach((n) => n.remove());
+        let total = 0, chg = 0;
+        ev[k].forEach((e) => {
+          total += e.px; if (e.changed) chg++;
+          if (e.px > 0) {
+            const b = document.createElement('div');
+            b.className = 'bar'; b.dataset.t = e.t; b.style.left = pct(e.t);
+            b.style.height = Math.max(3, Math.min(CAP, e.px)) + 'px';
+            b.title = `${e.px} px`;
+            p.trace.append(b);
+          }
+          if (e.changed) {
+            const d = document.createElement('div');
+            d.className = 'chg'; d.dataset.t = e.t; d.style.left = pct(e.t);
+            p.trace.append(d);
+          }
+        });
+        p.total = total; p.chg = chg;
+        p.ro.innerHTML = `moved <span class="${total ? 'hi' : ''}">${total} px</span> · ${chg} change${chg === 1 ? '' : 's'}`;
+      });
+      fillIndex(id, panes);
+      paint(+range.value);
+    }
+
+    function paint(t) {
+      clock.textContent = (t / 1000).toFixed(1) + ' s';
+      panes.forEach((p) => {
+        p.trace.querySelector('.ph').style.left = pct(t);
+        p.trace.querySelectorAll('[data-t]').forEach((n) => n.classList.toggle('past', +n.dataset.t <= t));
+      });
+      let i = 0;
+      steps.forEach((s, k) => { if (s.t <= t) i = k; });
+      stepBtns.forEach((b, k) => b.classList.toggle('now', k === i));
+      if (i !== current) { current = i; apply(i); }
+    }
+
+    function seek(t) { range.value = Math.min(t, dur); paint(+range.value); }
+
+    let raf = 0, start = 0;
+    function tick(now) {
+      const t = now - start;
+      seek(t);
+      if (t < dur) raf = requestAnimationFrame(tick); else stop();
+    }
+    function play() {
+      if (+range.value >= dur) seek(0);
+      start = performance.now() - +range.value;
+      playBtn.textContent = 'Pause';
+      if (reduced) { // step through without the sweep
+        let k = steps.findIndex((s) => s.t > +range.value);
+        const next = () => {
+          if (k < 0 || k >= steps.length) { seek(dur); stop(); return; }
+          seek(steps[k].t + 1); k++; raf = setTimeout(next, 900);
+        };
+        raf = setTimeout(next, 300);
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function stop() { cancelAnimationFrame(raf); clearTimeout(raf); raf = 0; playBtn.textContent = 'Play'; }
+
+    playBtn.addEventListener('click', () => (raf ? stop() : play()));
+    range.addEventListener('input', () => { stop(); paint(+range.value); });
+
+    alignSteps();
+    measure();
+    paint(0);
+    let rt;
+    addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { alignSteps(); measure(); }, 150); });
+    document.fonts?.ready.then(() => { alignSteps(); measure(); });
+  }
+
+  function fillIndex(id, panes) {
+    panes.forEach((p, k) => {
+      const cell = document.querySelector(`[data-sum="${id}:${k}:px"]`);
+      if (cell) cell.innerHTML = `<span class="${p.total ? 'hi' : ''}">${p.total} px</span>`;
+    });
+    const c = document.querySelector(`[data-sum="${id}:chg"]`);
+    if (c) c.textContent = `${panes[0].chg} → ${panes[1].chg}`;
+  }
+})();
+</script>

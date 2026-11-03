@@ -44,6 +44,25 @@ test("elements style through tokens, not literal colors", () => {
   }
 });
 
+// Rule 10: hovering, focusing or editing may repaint, never move layout. Size,
+// spacing and display belong in the resting rule, where they never change.
+const STATE = /:hover|:focus|\.editor-inner/;
+const PAINT = new Set([
+  "opacity", "color", "background", "background-color", "border-color", "border-left-color",
+  "text-decoration-color", "filter", "box-shadow", "outline-color", "transition",
+]);
+
+test("state rules only change paint, never layout", () => {
+  for (const e of QS.ELEMENTS) {
+    for (const [, selector, body] of e.css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      if (!STATE.test(selector)) continue;
+      for (const [, prop] of body.matchAll(/([a-z-]+)\s*:/g)) {
+        assert.ok(PAINT.has(prop) || prop.startsWith("transition"), `${e.id}: ${selector.trim()} sets ${prop}, which moves layout`);
+      }
+    }
+  }
+});
+
 test("neutrals resolve under every Logseq accent color, not just the classic one", () => {
   const css = QS.tokens(QS.SYSTEMS[0].id, ":root", ".dark");
   for (const m of css.matchAll(/var\(--ls-primary-text-color\)/g)) {
@@ -114,4 +133,40 @@ test("the key popover CSS parses and reads only known tokens", async () => {
   const { warnings } = await esbuild.transform(out.KEY_CSS, { loader: "css", target: "chrome120" });
   assert.deepEqual(warnings.map((w) => w.text), []);
   for (const [, name] of out.KEY_CSS.matchAll(/var\((--qs-[a-z-]+)/g)) assert.ok(BASE_NAMES.has(name), name);
+});
+
+// Tags are read, not skimmed past: easier to read than the other light text on the
+// line (dates), clearly lighter than block text.
+const TAG_MIN = 4.5;                 // WCAG AA for body text
+const TAG_MAX_OF_INK = 0.7;          // at most 70% of block text's contrast
+
+function tone(value, { bg, ink }) {
+  const mix = value.match(/(\d+)%, transparent\)$/);
+  if (mix) return out.fadedContrast({ bg, ink }, Number(mix[1]) / 100);
+  const hex = value.match(/^#([0-9a-f]{6})$/i);
+  if (hex) return out.contrast(hex[1].match(/../g).map((h) => parseInt(h, 16)), bg);
+  return null;
+}
+
+test("tags sit between other light text and block text in every system and mode", () => {
+  for (const s of QS.SYSTEMS) {
+    const css = QS.tokens(s.id, ":root", ".dark");
+    for (const mode of ["light", "dark"]) {
+      const block = mode === "light" ? css.split(".dark {")[0] : css.slice(css.indexOf(".dark {"));
+      const raw = (name) => block.match(new RegExp(`${name}: (.+);`))[1];
+      const get = (name) => tone(raw(name), out.REFERENCE[mode]);
+      const tag = get("--qs-tag");
+      const inkC = out.contrast(out.REFERENCE[mode].ink, out.REFERENCE[mode].bg);
+      const at = `${s.id} ${mode}: tag ${tag?.toFixed(2)}:1`;
+      assert.ok(tag !== null, `${s.id} ${mode}: tag tone can't be measured`);
+      assert.ok(tag >= TAG_MIN, `${at} is below ${TAG_MIN}:1`);
+      assert.ok(tag <= inkC * TAG_MAX_OF_INK, `${at} is too close to block text (${inkC.toFixed(2)}:1)`);
+      // Only grey text competes; a hued date is its own channel.
+      for (const other of ["--qs-date"]) {
+        if (!raw(other).endsWith("transparent)")) continue;
+        const o = get(other);
+        if (o !== null) assert.ok(tag > o, `${at} is not easier to read than ${other} (${o.toFixed(2)}:1)`);
+      }
+    }
+  }
 });

@@ -99,7 +99,6 @@ export default defineGroup("Chrome", [
       .unlinked-references:hover:not(:focus-within),
       .sidebar-item:hover .sidebar-item-header,
       :is(.ls-properties-area, .ls-page-properties):hover:not(:focus-within),
-      .block-tags:hover,
       .bottom-properties-row:hover:not(:focus-within),
       :is(.ls-view-head, .table-action-bar):hover:not(:focus-within),
       .block-main-container:has(.block-title-wrap > .ui__checkbox.checked):hover .block-title-wrap {

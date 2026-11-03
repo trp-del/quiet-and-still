@@ -89,7 +89,7 @@ export default defineGroup("Structure", [
     level: "ink", source: "live", on: true,
     css: `
       .block-main-container:has(.editor-inner)
-        :is(.ls-properties-area, .positioned-properties, .block-tags, .bottom-properties-row) {
+        :is(.ls-properties-area, .positioned-properties, .bottom-properties-row) {
         opacity: 1;
       }`,
   },

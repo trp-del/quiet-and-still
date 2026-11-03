@@ -11,7 +11,17 @@ export default defineGroup("Metadata", [
       :is(.ls-properties-area, .ls-page-properties):hover,
       :is(.ls-properties-area, .ls-page-properties):focus-within { opacity: 1; }
       .property-key { color: var(--qs-prop-key); }
-      .property-value { color: var(--qs-prop-val); }`,
+      .property-value { color: var(--qs-prop-val); font-variant-numeric: tabular-nums; }`,
+  },
+  {
+    id: "meta.key-column", label: "Property values line up in one column",
+    level: "quiet", source: "live", on: true,
+    // A minimum, not a width: a long key still shows in full and only its own row
+    // steps out. Set once at rest, so nothing moves when properties are edited.
+    css: `
+      :is(.ls-properties-area, .ls-page-properties) .property-key {
+        min-width: var(--qs-prop-key-width); flex-shrink: 0;
+      }`,
   },
   {
     id: "meta.empty", label: "Empty properties quieter than filled ones",
@@ -30,13 +40,6 @@ export default defineGroup("Metadata", [
       }`,
   },
   {
-    id: "meta.block-tags", label: "Block tag row",
-    level: "quiet", source: "src", on: true,
-    css: `
-      .block-tags { opacity: var(--qs-quiet); transition: opacity var(--qs-ease); }
-      .block-tags:hover { opacity: 1; }`,
-  },
-  {
     id: "meta.bottom-pills", label: "Bottom property pills",
     level: "quiet", source: "src", on: true,
     css: `
@@ -50,6 +53,7 @@ export default defineGroup("Metadata", [
       .ls-view-head, .table-action-bar { opacity: var(--qs-whisper); transition: opacity var(--qs-ease); }
       .ls-view-head:hover, .ls-view-head:focus-within, .table-action-bar:hover { opacity: 1; }
       .ls-table-header-cell { color: var(--qs-prop-key); font-size: var(--qs-prop-size); font-weight: 400; }
+      .ls-table-cell { font-variant-numeric: tabular-nums; }
       :is(.ls-table-cell, .ls-table-header-cell, .ls-table-row) { border-color: var(--qs-cell-line) !important; }`,
   },
   {

@@ -7,7 +7,7 @@ export default defineSystem({
   idea: "Mist's fade, Margin Notes' pencil metadata, and color only where attention is needed.",
   keys: {
     "page ref": "ink, dotted underline",
-    "tag": "small and pale",
+    "tag": "mid grey",
     "block ref": "ink, dashed underline",
     "properties": "small, pencil grey, near-invisible until hovered",
     "doing": "amber icon",
@@ -27,8 +27,6 @@ export default defineSystem({
     "--qs-ref-line-style": "dotted",
     "--qs-ref-line": n(45),
     "--qs-bref-line": n(40),
-    "--qs-tag-size": "0.78em",
-    "--qs-tag": n(40),
     "--qs-prop-size": "0.78em",
     "--qs-prop-key": n(45),
     "--qs-prop-val": n(65),

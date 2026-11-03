@@ -92,7 +92,7 @@ test("next-system command cycles systems and announces the name", async () => {
   const { calls, logseq, last } = await load();
   calls.commands.find((c) => c.key === "qs-next-system").action();
   assert.equal(logseq.settings.system, "paper");
-  assert.match(last().style, /--qs-tag-variant: all-small-caps;/);
+  assert.match(last().style, /--qs-state: #b4532a;/);
   assert.deepEqual(calls.msgs, ["Quiet & Still: Ink & Paper"]);
 });
 
