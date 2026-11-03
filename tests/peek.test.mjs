@@ -52,6 +52,8 @@ test("a double tap latches peek on, and another turns it off", async () => {
   await sleep(450);
   await d.tap(); await sleep(60); await d.tap();
   assert.ok(!d.peeking() && !d.latched());
+  await sleep(250); // past the hold threshold: the last press's timer must not bring it back
+  assert.ok(!d.peeking());
   stop();
 });
 

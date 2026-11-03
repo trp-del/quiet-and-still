@@ -43,6 +43,7 @@ export function watchPeek(doc: Document, key: () => string | null): () => void {
   };
   const up = (e: KeyboardEvent) => {
     if (e.key !== key()) return;
+    clearTimeout(timer); // the hold timer from this press must not fire after a toggle
     const tap = pressed > 0 && Date.now() - pressed < HOLD_MS;
     pressed = 0;
     if (tap && Date.now() - lastTap < DOUBLE_MS) { lastTap = 0; togglePeek(doc); return; }
